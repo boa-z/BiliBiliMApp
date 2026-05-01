@@ -7,6 +7,7 @@
 #import "NJCommonDefine.h"
 #import "NJSponsorBlockManager.h"
 #import "NJSponsorBlockSegment.h"
+#import <objc/runtime.h>
 
 static CGFloat const NJSponsorBlockPanelWidth = 310.0;
 static CGFloat const NJSponsorBlockPanelMinHeight = 154.0;
@@ -45,7 +46,10 @@ static NSTimeInterval const NJSponsorBlockOverlayIdleTimeout = 4.0;
 
 static NJSponsorBlockOverlayWindow *NJSponsorBlockSharedOverlayWindow;
 static UIViewController *NJSponsorBlockSharedOverlayController;
+static NSHashTable<UIView *> *NJSponsorBlockNativeTimelineViews;
+static __weak UIView *NJSponsorBlockEntryAnchorView;
 static NSTimeInterval NJSponsorBlockLastPlaybackActiveTime;
+static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
 
 + (instancetype)sharedPanel {
     static NJSponsorBlockPanelView *panel = nil;
@@ -74,7 +78,7 @@ static NSTimeInterval NJSponsorBlockLastPlaybackActiveTime;
         bestWindow = window;
     }
     if (!bestWindow) {
-        bestWindow = UIApplication.sharedApplication.keyWindow ?: windows.firstObject;
+        bestWindow = windows.firstObject;
     }
     return bestWindow;
 }
@@ -138,6 +142,10 @@ static NSTimeInterval NJSponsorBlockLastPlaybackActiveTime;
         [[self sharedPanel] removeFromSuperview];
         [[self sharedEntryButton] removeFromSuperview];
         [[self sharedTimelineView] removeFromSuperview];
+        for (UIView *timeline in NJSponsorBlockNativeTimelineViews.allObjects) {
+            [timeline removeFromSuperview];
+        }
+        [NJSponsorBlockNativeTimelineViews removeAllObjects];
         if (NJSponsorBlockSharedOverlayWindow) {
             NJSponsorBlockSharedOverlayWindow.hidden = YES;
         }
@@ -216,6 +224,72 @@ static NSTimeInterval NJSponsorBlockLastPlaybackActiveTime;
     [self refresh];
 }
 
++ (void)installEntryDirectlyInContainer:(UIView *)container {
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self installEntryDirectlyInContainer:container];
+        });
+        return;
+    }
+
+    if (!container || !NJ_MASTER_SWITCH_VALUE || !container.window) {
+        return;
+    }
+
+    [self markPlaybackActive];
+
+    UIView *hostView = container.superview ?: container;
+    if (!hostView || !hostView.window) {
+        return;
+    }
+    
+    UIButton *button = [self sharedEntryButton];
+    if (button.superview != hostView) {
+        [button removeFromSuperview];
+        [hostView addSubview:button];
+        NSLog(@"[NJSponsorBlock] entry installed as sibling near %@ host=%@ containerFrame=%@ hostBounds=%@",
+              container,
+              hostView,
+              NSStringFromCGRect([container convertRect:container.bounds toView:hostView]),
+              NSStringFromCGRect(hostView.bounds));
+    }
+
+    hostView.clipsToBounds = NO;
+
+    [hostView bringSubviewToFront:button];
+
+    CGFloat width = 38.0;
+    CGFloat height = 38.0;
+    CGFloat spacing = 4.0;
+    CGRect containerFrame = [container convertRect:container.bounds toView:hostView];
+    CGFloat x = CGRectGetMinX(containerFrame) - width - spacing;
+    CGFloat y = CGRectGetMidY(containerFrame) - height * 0.5;
+    
+    CGFloat maxX = CGRectGetWidth(hostView.bounds) - width;
+    CGFloat maxY = CGRectGetHeight(hostView.bounds) - height;
+    if (maxX >= 0.0) {
+        x = MIN(MAX(0.0, x), maxX);
+    }
+    if (maxY >= 0.0) {
+        y = MIN(MAX(0.0, y), maxY);
+    }
+    
+    button.frame = CGRectMake(x, y, width, height);
+
+    [self refresh];
+}
+
++ (void)setEntryAnchorView:(UIView *)view {
+    if (!view || view.hidden || view.alpha <= 0.01 || !view.window) {
+        return;
+    }
+    if (NJSponsorBlockEntryAnchorView == view) {
+        return;
+    }
+    NJSponsorBlockEntryAnchorView = view;
+    NSLog(@"[NJSponsorBlock] entry anchor updated %@ frame=%@", view, NSStringFromCGRect(view.frame));
+}
+
 + (void)installTimelineInView:(UIView *)view {
     UIView *timeline = [self sharedTimelineView];
     if (timeline.superview != view) {
@@ -224,6 +298,34 @@ static NSTimeInterval NJSponsorBlockLastPlaybackActiveTime;
     }
     [view bringSubviewToFront:timeline];
     [self layoutTimeline:timeline inView:view];
+    [self renderTimeline:timeline];
+}
+
++ (void)installNativeTimelineInView:(UIView *)view {
+    if (!view || !NJ_MASTER_SWITCH_VALUE) {
+        return;
+    }
+    if (!NJSponsorBlockNativeTimelineViews) {
+        NJSponsorBlockNativeTimelineViews = [NSHashTable weakObjectsHashTable];
+    }
+    
+    UIView *timeline = objc_getAssociatedObject(view, NJSponsorBlockNativeTimelineKey);
+    if (!timeline) {
+        timeline = [[UIView alloc] initWithFrame:CGRectZero];
+        timeline.userInteractionEnabled = NO;
+        timeline.backgroundColor = UIColor.clearColor;
+        timeline.clipsToBounds = YES;
+        objc_setAssociatedObject(view, NJSponsorBlockNativeTimelineKey, timeline, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        [NJSponsorBlockNativeTimelineViews addObject:timeline];
+    }
+    
+    if (timeline.superview != view) {
+        [timeline removeFromSuperview];
+        [view addSubview:timeline];
+        NSLog(@"[NJSponsorBlock] native timeline installed in %@ frame=%@", view, NSStringFromCGRect(view.frame));
+    }
+    [view bringSubviewToFront:timeline];
+    [self layoutNativeTimeline:timeline inView:view];
     [self renderTimeline:timeline];
 }
 
@@ -249,10 +351,20 @@ static NSTimeInterval NJSponsorBlockLastPlaybackActiveTime;
 + (void)refresh {
     [[self sharedPanel] refreshContent];
     [self renderTimeline:[self sharedTimelineView]];
+    [self refreshNativeTimelines];
+}
+
++ (void)refreshNativeTimelines {
+    for (UIView *timeline in NJSponsorBlockNativeTimelineViews.allObjects) {
+        if (timeline.superview) {
+            [self layoutNativeTimeline:timeline inView:timeline.superview];
+            [self renderTimeline:timeline];
+        }
+    }
 }
 
 + (void)togglePanelFromEntryButton:(UIButton *)button {
-    UIView *view = button.superview;
+    UIView *view = [self currentHostView] ?: button.superview;
     if (!view) {
         return;
     }
@@ -264,19 +376,33 @@ static NSTimeInterval NJSponsorBlockLastPlaybackActiveTime;
     }
     
     [self installInView:view];
-    CGRect buttonFrame = [view convertRect:button.frame fromView:button.superview];
+    CGRect buttonFrame = [view convertRect:button.bounds fromView:button];
     CGRect frame = panel.frame;
     frame.origin.x = MIN(MAX(12, CGRectGetMinX(buttonFrame) - 206), CGRectGetWidth(view.bounds) - CGRectGetWidth(frame) - 12);
     frame.origin.y = CGRectGetMaxY(buttonFrame) + 10;
     panel.frame = frame;
     [panel keepInsideSuperview];
-    [view bringSubviewToFront:button];
 }
 
 + (void)layoutEntryButton:(UIButton *)button inView:(UIView *)view {
     UIEdgeInsets insets = view.safeAreaInsets;
     CGRect bounds = view.bounds;
     BOOL portrait = CGRectGetHeight(bounds) >= CGRectGetWidth(bounds);
+    
+    UIView *anchorView = NJSponsorBlockEntryAnchorView;
+    if (anchorView && !anchorView.hidden && anchorView.alpha > 0.01 && anchorView.window) {
+        CGRect anchorFrame = [anchorView convertRect:anchorView.bounds toView:nil];
+        CGFloat x = CGRectGetMinX(anchorFrame) - 44.0;
+        CGFloat y = CGRectGetMidY(anchorFrame) - 19.0;
+        CGFloat maxX = CGRectGetWidth(bounds) - insets.right - 38.0 - 4.0;
+        CGFloat maxY = CGRectGetHeight(bounds) - insets.bottom - 38.0 - 4.0;
+        button.frame = CGRectMake(MIN(MAX(insets.left + 4.0, x), maxX),
+                                  MIN(MAX(insets.top + 4.0, y), maxY),
+                                  38.0,
+                                  38.0);
+        return;
+    }
+    
     CGFloat x = portrait ? CGRectGetWidth(bounds) - insets.right - 132.0 : CGRectGetWidth(bounds) - insets.right - 132.0;
     CGFloat y = portrait ? insets.top + 64.0 : insets.top + 22.0;
     button.frame = CGRectMake(MAX(insets.left + 8.0, x), y, 38.0, 38.0);
@@ -290,6 +416,15 @@ static NSTimeInterval NJSponsorBlockLastPlaybackActiveTime;
     CGFloat width = CGRectGetWidth(bounds) - insets.left - insets.right - 206.0;
     CGFloat y = portrait ? insets.top + 244.0 : CGRectGetHeight(bounds) - insets.bottom - 42.0;
     timeline.frame = CGRectMake(MAX(insets.left + 72.0, x), y, MAX(120.0, width), 4.0);
+}
+
++ (void)layoutNativeTimeline:(UIView *)timeline inView:(UIView *)view {
+    CGRect bounds = view.bounds;
+    CGFloat width = CGRectGetWidth(bounds);
+    CGFloat height = CGRectGetHeight(bounds);
+    CGFloat timelineHeight = MIN(4.0, MAX(2.0, height));
+    CGFloat y = MAX(0, (height - timelineHeight) * 0.5);
+    timeline.frame = CGRectMake(0, y, width, timelineHeight);
 }
 
 + (void)renderTimeline:(UIView *)timeline {
@@ -487,6 +622,7 @@ static NSTimeInterval NJSponsorBlockLastPlaybackActiveTime;
     [self.collapseButton setTitle:(self.collapsed ? @"＋" : @"－") forState:UIControlStateNormal];
     [self resizeForContent];
     [[self class] renderTimeline:[[self class] sharedTimelineView]];
+    [[self class] refreshNativeTimelines];
 }
 
 - (void)renderPanelProgressWithSegments:(NSArray<NJSponsorBlockSegment *> *)segments duration:(NSTimeInterval)duration {

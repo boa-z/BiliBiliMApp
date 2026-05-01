@@ -12,6 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedPanel;
 + (nullable UIView *)currentHostView;
 + (void)installEntryInView:(UIView *)view;
++ (void)installEntryDirectlyInContainer:(UIView *)container;
++ (void)setEntryAnchorView:(nullable UIView *)view;
++ (void)installNativeTimelineInView:(UIView *)view;
 + (void)installInView:(UIView *)view;
 + (void)markPlaybackActive;
 + (void)hideOverlay;

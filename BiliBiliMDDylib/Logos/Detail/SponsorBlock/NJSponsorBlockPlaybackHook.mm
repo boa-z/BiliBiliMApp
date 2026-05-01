@@ -281,7 +281,8 @@ static void NJSponsorBlockCaptureIJKPlayerFromObject(id object) {
 
 static void NJSponsorBlockInstallOverlayIfNeeded(void) {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [NJSponsorBlockPanelView installEntryInView:[NJSponsorBlockPanelView currentHostView]];
+        [NJSponsorBlockPanelView markPlaybackActive];
+        [NJSponsorBlockPanelView refresh];
     });
 }
 
