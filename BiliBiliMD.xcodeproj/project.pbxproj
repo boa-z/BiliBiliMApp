@@ -38,6 +38,11 @@
 		BF0D03592DEDA95900115365 /* AntiAntiDebug.m in Sources */ = {isa = PBXBuildFile; fileRef = BF0D03582DEDA95900115365 /* AntiAntiDebug.m */; };
 		BF0D03602DEDA95900115365 /* BiliBiliMDDylib.h in Headers */ = {isa = PBXBuildFile; fileRef = BF0D035F2DEDA95900115365 /* BiliBiliMDDylib.h */; };
 		BF0D03622DEDA95900115365 /* BiliBiliMDDylib.m in Sources */ = {isa = PBXBuildFile; fileRef = BF0D03612DEDA95900115365 /* BiliBiliMDDylib.m */; };
+		BF5B10012F96A000008EB74C /* NJSponsorBlockSegment.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20022F96A000008EB74C /* NJSponsorBlockSegment.m */; };
+		BF5B10022F96A000008EB74C /* NJSponsorBlockService.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20042F96A000008EB74C /* NJSponsorBlockService.m */; };
+		BF5B10032F96A000008EB74C /* NJSponsorBlockManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20062F96A000008EB74C /* NJSponsorBlockManager.m */; };
+		BF5B10042F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */; };
+		BF5B10052F96A000008EB74C /* NJSponsorBlockPanelView.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20092F96A000008EB74C /* NJSponsorBlockPanelView.m */; };
 		BF9A72A22F9469AB008EB74C /* BAPIAppCardV1Base.h in Headers */ = {isa = PBXBuildFile; fileRef = BF9A71912F9469AB008EB74C /* BAPIAppCardV1Base.h */; };
 		BF9A72A32F9469AB008EB74C /* NJAnimeChannelCardHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = BF9A717E2F9469AB008EB74C /* NJAnimeChannelCardHandler.h */; };
 		BF9A72A42F9469AB008EB74C /* NJSettingPublishTableViewCell.h in Headers */ = {isa = PBXBuildFile; fileRef = BF9A720C2F9469AB008EB74C /* NJSettingPublishTableViewCell.h */; };
@@ -340,10 +345,6 @@
 		BFB4F2E12F03FB1C004F7292 /* libroot.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BFB4F2E02F03FB1C004F7292 /* libroot.a */; };
 		BFDA21812E65CD7300E3249E /* fishhook.h in Headers */ = {isa = PBXBuildFile; fileRef = BFDA217F2E65CD7300E3249E /* fishhook.h */; };
 		BFDA21822E65CD7300E3249E /* fishhook.c in Sources */ = {isa = PBXBuildFile; fileRef = BFDA21802E65CD7300E3249E /* fishhook.c */; };
-		BF5B10012F96A000008EB74C /* NJSponsorBlockSegment.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20022F96A000008EB74C /* NJSponsorBlockSegment.m */; };
-		BF5B10022F96A000008EB74C /* NJSponsorBlockService.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20042F96A000008EB74C /* NJSponsorBlockService.m */; };
-		BF5B10032F96A000008EB74C /* NJSponsorBlockManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20062F96A000008EB74C /* NJSponsorBlockManager.m */; };
-		BF5B10042F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -406,6 +407,15 @@
 		BF0D03582DEDA95900115365 /* AntiAntiDebug.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AntiAntiDebug.m; sourceTree = "<group>"; };
 		BF0D035F2DEDA95900115365 /* BiliBiliMDDylib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BiliBiliMDDylib.h; sourceTree = "<group>"; };
 		BF0D03612DEDA95900115365 /* BiliBiliMDDylib.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BiliBiliMDDylib.m; sourceTree = "<group>"; };
+		BF5B20012F96A000008EB74C /* NJSponsorBlockSegment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockSegment.h; sourceTree = "<group>"; };
+		BF5B20022F96A000008EB74C /* NJSponsorBlockSegment.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockSegment.m; sourceTree = "<group>"; };
+		BF5B20032F96A000008EB74C /* NJSponsorBlockService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockService.h; sourceTree = "<group>"; };
+		BF5B20042F96A000008EB74C /* NJSponsorBlockService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockService.m; sourceTree = "<group>"; };
+		BF5B20052F96A000008EB74C /* NJSponsorBlockManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockManager.h; sourceTree = "<group>"; };
+		BF5B20062F96A000008EB74C /* NJSponsorBlockManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockManager.m; sourceTree = "<group>"; };
+		BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NJSponsorBlockPlaybackHook.mm; sourceTree = "<group>"; };
+		BF5B20082F96A000008EB74C /* NJSponsorBlockPanelView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockPanelView.h; sourceTree = "<group>"; };
+		BF5B20092F96A000008EB74C /* NJSponsorBlockPanelView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockPanelView.m; sourceTree = "<group>"; };
 		BF9A71312F9469AB008EB74C /* NSBundle+NJBundleCategory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSBundle+NJBundleCategory.h"; sourceTree = "<group>"; };
 		BF9A71322F9469AB008EB74C /* NSBundle+NJBundleCategory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSBundle+NJBundleCategory.m"; sourceTree = "<group>"; };
 		BF9A71332F9469AB008EB74C /* NSBundle+NJImageLoading.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSBundle+NJImageLoading.h"; sourceTree = "<group>"; };
@@ -440,13 +450,6 @@
 		BF9A71512F9469AB008EB74C /* NJPlaybackRate.xm */ = {isa = PBXFileReference; lastKnownFileType = text; path = NJPlaybackRate.xm; sourceTree = "<group>"; };
 		BF9A71522F9469AB008EB74C /* NJPlaybackRateWriteMemoryTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJPlaybackRateWriteMemoryTool.h; sourceTree = "<group>"; };
 		BF9A71532F9469AB008EB74C /* NJPlaybackRateWriteMemoryTool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJPlaybackRateWriteMemoryTool.m; sourceTree = "<group>"; };
-		BF5B20012F96A000008EB74C /* NJSponsorBlockSegment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockSegment.h; sourceTree = "<group>"; };
-		BF5B20022F96A000008EB74C /* NJSponsorBlockSegment.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockSegment.m; sourceTree = "<group>"; };
-		BF5B20032F96A000008EB74C /* NJSponsorBlockService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockService.h; sourceTree = "<group>"; };
-		BF5B20042F96A000008EB74C /* NJSponsorBlockService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockService.m; sourceTree = "<group>"; };
-		BF5B20052F96A000008EB74C /* NJSponsorBlockManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockManager.h; sourceTree = "<group>"; };
-		BF5B20062F96A000008EB74C /* NJSponsorBlockManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockManager.m; sourceTree = "<group>"; };
-		BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NJSponsorBlockPlaybackHook.mm; sourceTree = "<group>"; };
 		BF9A71552F9469AB008EB74C /* NJStoryDataDispatcher.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJStoryDataDispatcher.h; sourceTree = "<group>"; };
 		BF9A71562F9469AB008EB74C /* NJStoryDataDispatcher.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJStoryDataDispatcher.m; sourceTree = "<group>"; };
 		BF9A71572F9469AB008EB74C /* NJStoryDataHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJStoryDataHandler.h; sourceTree = "<group>"; };
@@ -916,6 +919,22 @@
 			path = fishhook;
 			sourceTree = "<group>";
 		};
+		BF5B30012F96A000008EB74C /* SponsorBlock */ = {
+			isa = PBXGroup;
+			children = (
+				BF5B20012F96A000008EB74C /* NJSponsorBlockSegment.h */,
+				BF5B20022F96A000008EB74C /* NJSponsorBlockSegment.m */,
+				BF5B20032F96A000008EB74C /* NJSponsorBlockService.h */,
+				BF5B20042F96A000008EB74C /* NJSponsorBlockService.m */,
+				BF5B20052F96A000008EB74C /* NJSponsorBlockManager.h */,
+				BF5B20062F96A000008EB74C /* NJSponsorBlockManager.m */,
+				BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */,
+				BF5B20082F96A000008EB74C /* NJSponsorBlockPanelView.h */,
+				BF5B20092F96A000008EB74C /* NJSponsorBlockPanelView.m */,
+			);
+			path = SponsorBlock;
+			sourceTree = "<group>";
+		};
 		BF9A71442F9469AB008EB74C /* Category */ = {
 			isa = PBXGroup;
 			children = (
@@ -979,20 +998,6 @@
 				BF9A715E2F9469AB008EB74C /* NJStoryVerticalLiveHandler.m */,
 			);
 			path = Dispatcher;
-			sourceTree = "<group>";
-		};
-		BF5B30012F96A000008EB74C /* SponsorBlock */ = {
-			isa = PBXGroup;
-			children = (
-				BF5B20012F96A000008EB74C /* NJSponsorBlockSegment.h */,
-				BF5B20022F96A000008EB74C /* NJSponsorBlockSegment.m */,
-				BF5B20032F96A000008EB74C /* NJSponsorBlockService.h */,
-				BF5B20042F96A000008EB74C /* NJSponsorBlockService.m */,
-				BF5B20052F96A000008EB74C /* NJSponsorBlockManager.h */,
-				BF5B20062F96A000008EB74C /* NJSponsorBlockManager.m */,
-				BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */,
-			);
-			path = SponsorBlock;
 			sourceTree = "<group>";
 		};
 		BF9A71662F9469AB008EB74C /* Stage */ = {
@@ -2012,6 +2017,7 @@
 				BF5B10022F96A000008EB74C /* NJSponsorBlockService.m in Sources */,
 				BF5B10032F96A000008EB74C /* NJSponsorBlockManager.m in Sources */,
 				BF5B10042F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm in Sources */,
+				BF5B10052F96A000008EB74C /* NJSponsorBlockPanelView.m in Sources */,
 				BF9A73442F9469AB008EB74C /* mz_compat.c in Sources */,
 				BF9A73452F9469AB008EB74C /* NJSettingSwitchViewModel.m in Sources */,
 				BF9A73462F9469AB008EB74C /* UIColor+NJColor.m in Sources */,

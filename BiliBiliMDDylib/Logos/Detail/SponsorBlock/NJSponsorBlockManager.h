@@ -9,15 +9,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+FOUNDATION_EXPORT NSNotificationName const NJSponsorBlockStateDidChangeNotification;
+
 @interface NJSponsorBlockManager : NSObject
 
 @property (nonatomic, copy, readonly) NSString *videoID;
 @property (nonatomic, assign, readonly) NSInteger cid;
+@property (nonatomic, strong, readonly) NSArray<NJSponsorBlockSegment *> *segments;
+@property (nonatomic, assign, readonly) NSTimeInterval currentPlaybackTime;
+@property (nonatomic, assign, readonly) NSTimeInterval estimatedVideoDuration;
 
 + (instancetype)sharedInstance;
 
 - (void)updateVideoID:(NSString *)videoID cid:(NSInteger)cid;
 - (void)inspectResponseData:(NSData *)data response:(NSURLResponse *)response;
+- (void)inspectModelObject:(id)object source:(NSString *)source;
 - (nullable NJSponsorBlockSegment *)activeSegmentAtPlaybackTime:(NSTimeInterval)time;
 - (void)handlePlaybackTimeForProbe:(NSTimeInterval)time;
 - (void)markSegmentSkipped:(NJSponsorBlockSegment *)segment;

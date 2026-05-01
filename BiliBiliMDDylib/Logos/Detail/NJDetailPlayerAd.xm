@@ -122,6 +122,8 @@
 
 #import <UIKit/UIKit.h>
 #import "NJCommonDefine.h"
+#import "NJSponsorBlockPanelView.h"
+#import "NJSponsorBlockManager.h"
 
 %group App
 
@@ -254,6 +256,16 @@
 - (void)didLayoutSubWidgets {
 //    NSLog(@"%@:%@-%p-%s-subWidgets:%@", nj_logPrefix, NSStringFromClass([(id)self class]), self, __FUNCTION__, [self subWidgets]);
     %orig;
+    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    if (!window) {
+        window = [UIApplication sharedApplication].windows.firstObject;
+    }
+    [NJSponsorBlockPanelView installEntryInView:window];
+}
+
+- (void)dealloc {
+    [NJSponsorBlockPanelView removePanel];
+    %orig;
 }
 
 %end
@@ -293,6 +305,34 @@
 
 %end
 
+@interface BAPIAppViewuniteV1ViewReply : NSObject
+
+@end
+
+%hook BAPIAppViewuniteV1ViewReply
+
+- (id)initWithData:(id)data extensionRegistry:(id)registry error:(id *)error {
+    id ret = %orig;
+    [[NJSponsorBlockManager sharedInstance] inspectModelObject:ret source:@"BAPIAppViewuniteV1ViewReply"];
+    return ret;
+}
+
+%end
+
+@interface BAPIAppPlayeruniteV1PlayViewUniteReply : NSObject
+
+@end
+
+%hook BAPIAppPlayeruniteV1PlayViewUniteReply
+
+- (id)initWithData:(id)data extensionRegistry:(id)registry error:(id *)error {
+    id ret = %orig;
+    [[NJSponsorBlockManager sharedInstance] inspectModelObject:ret source:@"BAPIAppPlayeruniteV1PlayViewUniteReply"];
+    return ret;
+}
+
+%end
+
 @interface BAPIAppViewuniteV1DmResource : NSObject
 
 @property (retain, nonatomic) NSMutableArray *commandDmsArray;
@@ -311,6 +351,7 @@
 
 - (id)initWithData:(id)data extensionRegistry:(id)registry error:(id *)error {
     BAPIAppViewuniteV1ViewProgressReply *ret = %orig;
+    [[NJSponsorBlockManager sharedInstance] inspectModelObject:ret source:@"BAPIAppViewuniteV1ViewProgressReply"];
     // 移除所有卡片，比如一键追番
     [ret.dm.cardsArray removeAllObjects];
     return ret;
