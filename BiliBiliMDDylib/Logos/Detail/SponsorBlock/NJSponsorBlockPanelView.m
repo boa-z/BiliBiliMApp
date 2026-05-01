@@ -10,6 +10,7 @@
 
 static CGFloat const NJSponsorBlockPanelWidth = 310.0;
 static CGFloat const NJSponsorBlockPanelMinHeight = 154.0;
+static NSTimeInterval const NJSponsorBlockOverlayIdleTimeout = 4.0;
 
 @interface NJSponsorBlockOverlayWindow : UIWindow
 @end
@@ -44,6 +45,7 @@ static CGFloat const NJSponsorBlockPanelMinHeight = 154.0;
 
 static NJSponsorBlockOverlayWindow *NJSponsorBlockSharedOverlayWindow;
 static UIViewController *NJSponsorBlockSharedOverlayController;
+static NSTimeInterval NJSponsorBlockLastPlaybackActiveTime;
 
 + (instancetype)sharedPanel {
     static NJSponsorBlockPanelView *panel = nil;
@@ -111,6 +113,38 @@ static UIViewController *NJSponsorBlockSharedOverlayController;
     return NJSponsorBlockSharedOverlayController.view;
 }
 
++ (void)markPlaybackActive {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NJSponsorBlockLastPlaybackActiveTime = CACurrentMediaTime();
+        if (NJSponsorBlockSharedOverlayWindow.hidden) {
+            NJSponsorBlockSharedOverlayWindow.hidden = NO;
+        }
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideOverlayIfIdle) object:nil];
+        [self performSelector:@selector(hideOverlayIfIdle) withObject:nil afterDelay:NJSponsorBlockOverlayIdleTimeout + 0.5];
+    });
+}
+
++ (void)hideOverlayIfIdle {
+    NSTimeInterval idleTime = CACurrentMediaTime() - NJSponsorBlockLastPlaybackActiveTime;
+    if (idleTime < NJSponsorBlockOverlayIdleTimeout) {
+        [self performSelector:@selector(hideOverlayIfIdle) withObject:nil afterDelay:NJSponsorBlockOverlayIdleTimeout - idleTime + 0.5];
+        return;
+    }
+    [self hideOverlay];
+}
+
++ (void)hideOverlay {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[self sharedPanel] removeFromSuperview];
+        [[self sharedEntryButton] removeFromSuperview];
+        [[self sharedTimelineView] removeFromSuperview];
+        if (NJSponsorBlockSharedOverlayWindow) {
+            NJSponsorBlockSharedOverlayWindow.hidden = YES;
+        }
+        NSLog(@"[NJSponsorBlock] overlay hidden");
+    });
+}
+
 + (UIWindowScene *)activeWindowScene API_AVAILABLE(ios(13.0)) {
     NSSet<UIScene *> *scenes = UIApplication.sharedApplication.connectedScenes;
     for (UIScene *scene in scenes) {
@@ -168,6 +202,7 @@ static UIViewController *NJSponsorBlockSharedOverlayController;
     if (!hostView) {
         return;
     }
+    [self markPlaybackActive];
     
     UIButton *button = [self sharedEntryButton];
     if (button.superview != hostView) {

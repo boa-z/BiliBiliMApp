@@ -27,6 +27,7 @@ static void NJSponsorBlockScheduleInstallRetries(void);
 static BOOL NJSponsorBlockSeekCurrentPlayerToTime(NSTimeInterval time);
 static void NJSponsorBlockHandlePlaybackTime(NSTimeInterval position);
 static void NJSponsorBlockStartPlaybackPolling(void);
+static void NJSponsorBlockStopPlaybackPolling(void);
 
 static void (*NJSBOrigUpdateClockCurPosition)(id self, SEL _cmd, void *clock, double position);
 static void NJSponsorBlockLogRuntimeProbe(id object);
@@ -363,17 +364,32 @@ static void NJSponsorBlockStartPlaybackPolling(void) {
             return;
         }
         
+        __block NSInteger failedReadCount = 0;
         NJSponsorBlockPlaybackPollTimer = [NSTimer scheduledTimerWithTimeInterval:0.25 repeats:YES block:^(__unused NSTimer *timer) {
             id player = NJSponsorBlockCurrentIJKPlayer ?: NJSponsorBlockCurrentSeekObject;
             NSTimeInterval time = 0;
             if (!NJSponsorBlockReadPlaybackTime(player, &time)) {
+                failedReadCount++;
+                if (failedReadCount >= 12) {
+                    NSLog(@"[NJSponsorBlock] playback polling stopped after stale player");
+                    NJSponsorBlockStopPlaybackPolling();
+                    [NJSponsorBlockPanelView hideOverlay];
+                }
                 return;
             }
+            failedReadCount = 0;
             NJSponsorBlockInstallOverlayIfNeeded();
             NJSponsorBlockHandlePlaybackTime(time);
         }];
         NSLog(@"[NJSponsorBlock] playback polling started");
     });
+}
+
+static void NJSponsorBlockStopPlaybackPolling(void) {
+    [NJSponsorBlockPlaybackPollTimer invalidate];
+    NJSponsorBlockPlaybackPollTimer = nil;
+    NJSponsorBlockCurrentIJKPlayer = nil;
+    NJSponsorBlockCurrentSeekObject = nil;
 }
 
 static BOOL NJSponsorBlockSeekObjectToTime(id player, NSTimeInterval time) {
