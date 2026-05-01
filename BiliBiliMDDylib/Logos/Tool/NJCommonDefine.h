@@ -81,6 +81,12 @@ NS_ASSUME_NONNULL_BEGIN
 #define NJ_VERTICAL_SCREEN_MODE_VALUE ([NJ_SETTING_CACHE containsObjectForKey:NJ_VERTICAL_SCREEN_MODE_KEY] && \
 [(NSNumber *)[NJ_SETTING_CACHE objectForKey:NJ_VERTICAL_SCREEN_MODE_KEY] boolValue])
 
+/// SponsorBlock 跳过片段
+#define NJ_SPONSOR_BLOCK_KEY @"NJ_SPONSOR_BLOCK_KEY"
+/// SponsorBlock 跳过片段的值
+#define NJ_SPONSOR_BLOCK_VALUE (![NJ_SETTING_CACHE containsObjectForKey:NJ_SPONSOR_BLOCK_KEY] || \
+[(NSNumber *)[NJ_SETTING_CACHE objectForKey:NJ_SPONSOR_BLOCK_KEY] boolValue])
+
 /// --------------------- 设置页面 ---------------------
 
 /// --------------------- 单例 ---------------------

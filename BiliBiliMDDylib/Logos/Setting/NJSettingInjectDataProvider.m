@@ -47,6 +47,10 @@
                                                            cellId:NJ_SWITCH_CELL_ID
                                                             title:@"竖屏模式"
                                                                   on:NJ_VERTICAL_SCREEN_MODE_VALUE saveKey:NJ_VERTICAL_SCREEN_MODE_KEY]];
+    [datas addObject:[[NJSettingSwitchViewModel alloc] initWithBizId:NJ_SPONSOR_BLOCK_BIZ_ID
+                                                           cellId:NJ_SWITCH_CELL_ID
+                                                            title:@"SponsorBlock 跳过片段"
+                                                                  on:NJ_SPONSOR_BLOCK_VALUE saveKey:NJ_SPONSOR_BLOCK_KEY]];
     [datas addObject:[[NJSettingSkullViewModel alloc] initWithBizId:NJ_SHARE_DATA_BIZ_ID
                                                              cellId:NJ_COMMON_CELL_ID
                                                               title:@"分享数据"]];

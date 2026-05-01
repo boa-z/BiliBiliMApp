@@ -35,6 +35,8 @@
 #define NJ_AUTO_RECEIVE_COUPON_BIZ_ID @"autoReceiveCoupon"
 // 竖屏模式
 #define NJ_VERTICAL_SCREEN_MODE_BIZ_ID @"verticalScreenMode"
+// SponsorBlock 跳过片段
+#define NJ_SPONSOR_BLOCK_BIZ_ID @"sponsorBlock"
 // 分享数据
 #define NJ_SHARE_DATA_BIZ_ID @"shareData"
 // 版本

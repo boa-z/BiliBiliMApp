@@ -20,6 +20,7 @@
 #import "NJMineDataItem.h"
 #import "NJStoryDataItem.h"
 #import "NJSkinDataItem.h"
+#import "NJSponsorBlockManager.h"
 
 @interface NJApiDataManger ()
 
@@ -88,6 +89,7 @@
     if (urlStr.length == 0) {
         return data;
     }
+    [[NJSponsorBlockManager sharedInstance] inspectResponseData:data response:response];
     NJApiDataItem *item = self.itemDic[urlStr];
     if (!item) {
         return data;

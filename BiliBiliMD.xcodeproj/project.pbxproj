@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6F2F9CA1A5ECC75C5840548F /* Pods_BiliBiliMDDylib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DBF86B72E4C90DC8C2CC938C /* Pods_BiliBiliMDDylib.framework */; };
 		BF09B2632E4DDEE000160C03 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF09B2622E4DDEE000160C03 /* Security.framework */; };
 		BF09B2652E4DDEF500160C03 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BF09B2642E4DDEF500160C03 /* libiconv.tbd */; };
 		BF09B2672E4DDF0A00160C03 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BF09B2662E4DDF0A00160C03 /* libz.tbd */; };
@@ -339,6 +340,10 @@
 		BFB4F2E12F03FB1C004F7292 /* libroot.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BFB4F2E02F03FB1C004F7292 /* libroot.a */; };
 		BFDA21812E65CD7300E3249E /* fishhook.h in Headers */ = {isa = PBXBuildFile; fileRef = BFDA217F2E65CD7300E3249E /* fishhook.h */; };
 		BFDA21822E65CD7300E3249E /* fishhook.c in Sources */ = {isa = PBXBuildFile; fileRef = BFDA21802E65CD7300E3249E /* fishhook.c */; };
+		BF5B10012F96A000008EB74C /* NJSponsorBlockSegment.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20022F96A000008EB74C /* NJSponsorBlockSegment.m */; };
+		BF5B10022F96A000008EB74C /* NJSponsorBlockService.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20042F96A000008EB74C /* NJSponsorBlockService.m */; };
+		BF5B10032F96A000008EB74C /* NJSponsorBlockManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20062F96A000008EB74C /* NJSponsorBlockManager.m */; };
+		BF5B10042F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -366,6 +371,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3FCEE99714C61D810F04834E /* Pods-BiliBiliMDDylib.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BiliBiliMDDylib.debug.xcconfig"; path = "Target Support Files/Pods-BiliBiliMDDylib/Pods-BiliBiliMDDylib.debug.xcconfig"; sourceTree = "<group>"; };
+		ACCB97C843C3C78F983C96BA /* Pods-BiliBiliMDDylib.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BiliBiliMDDylib.release.xcconfig"; path = "Target Support Files/Pods-BiliBiliMDDylib/Pods-BiliBiliMDDylib.release.xcconfig"; sourceTree = "<group>"; };
 		BF09B2622E4DDEE000160C03 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
 		BF09B2642E4DDEF500160C03 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/lib/libiconv.tbd; sourceTree = DEVELOPER_DIR; };
 		BF09B2662E4DDF0A00160C03 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
@@ -395,7 +402,7 @@
 		BF0D034F2DEDA95900115365 /* selectortramps.mac */ = {isa = PBXFileReference; lastKnownFileType = text; path = selectortramps.mac; sourceTree = "<group>"; };
 		BF0D03512DEDA95900115365 /* LLDBTools.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LLDBTools.h; sourceTree = "<group>"; };
 		BF0D03532DEDA95900115365 /* LLDBTools.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LLDBTools.mm; sourceTree = "<group>"; };
-		BF0D03562DEDA95900115365 /* BiliBiliMDDylib-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "BiliBiliMDDylib-Prefix.pch"; path = "../BiliBiliMDDylib-Prefix.pch"; sourceTree = "<group>"; };
+		BF0D03562DEDA95900115365 /* BiliBiliMDDylib-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "BiliBiliMDDylib-Prefix.pch"; path = "BiliBiliMDDylib/BiliBiliMDDylib-Prefix.pch"; sourceTree = SOURCE_ROOT; };
 		BF0D03582DEDA95900115365 /* AntiAntiDebug.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AntiAntiDebug.m; sourceTree = "<group>"; };
 		BF0D035F2DEDA95900115365 /* BiliBiliMDDylib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BiliBiliMDDylib.h; sourceTree = "<group>"; };
 		BF0D03612DEDA95900115365 /* BiliBiliMDDylib.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BiliBiliMDDylib.m; sourceTree = "<group>"; };
@@ -433,6 +440,13 @@
 		BF9A71512F9469AB008EB74C /* NJPlaybackRate.xm */ = {isa = PBXFileReference; lastKnownFileType = text; path = NJPlaybackRate.xm; sourceTree = "<group>"; };
 		BF9A71522F9469AB008EB74C /* NJPlaybackRateWriteMemoryTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJPlaybackRateWriteMemoryTool.h; sourceTree = "<group>"; };
 		BF9A71532F9469AB008EB74C /* NJPlaybackRateWriteMemoryTool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJPlaybackRateWriteMemoryTool.m; sourceTree = "<group>"; };
+		BF5B20012F96A000008EB74C /* NJSponsorBlockSegment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockSegment.h; sourceTree = "<group>"; };
+		BF5B20022F96A000008EB74C /* NJSponsorBlockSegment.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockSegment.m; sourceTree = "<group>"; };
+		BF5B20032F96A000008EB74C /* NJSponsorBlockService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockService.h; sourceTree = "<group>"; };
+		BF5B20042F96A000008EB74C /* NJSponsorBlockService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockService.m; sourceTree = "<group>"; };
+		BF5B20052F96A000008EB74C /* NJSponsorBlockManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockManager.h; sourceTree = "<group>"; };
+		BF5B20062F96A000008EB74C /* NJSponsorBlockManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockManager.m; sourceTree = "<group>"; };
+		BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NJSponsorBlockPlaybackHook.mm; sourceTree = "<group>"; };
 		BF9A71552F9469AB008EB74C /* NJStoryDataDispatcher.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJStoryDataDispatcher.h; sourceTree = "<group>"; };
 		BF9A71562F9469AB008EB74C /* NJStoryDataDispatcher.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJStoryDataDispatcher.m; sourceTree = "<group>"; };
 		BF9A71572F9469AB008EB74C /* NJStoryDataHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJStoryDataHandler.h; sourceTree = "<group>"; };
@@ -722,6 +736,7 @@
 		BFB4F2E02F03FB1C004F7292 /* libroot.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libroot.a; path = ../../../../../../../opt/theos/vendor/lib/libroot.a; sourceTree = "<group>"; };
 		BFDA217F2E65CD7300E3249E /* fishhook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fishhook.h; sourceTree = "<group>"; };
 		BFDA21802E65CD7300E3249E /* fishhook.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fishhook.c; sourceTree = "<group>"; };
+		DBF86B72E4C90DC8C2CC938C /* Pods_BiliBiliMDDylib.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_BiliBiliMDDylib.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -767,12 +782,22 @@
 				BF0D03212DEDA95900115365 /* JavaScriptCore.framework in Frameworks */,
 				BF0D03252DEDA95900115365 /* UIKit.framework in Frameworks */,
 				BF0D03232DEDA95900115365 /* Foundation.framework in Frameworks */,
+				6F2F9CA1A5ECC75C5840548F /* Pods_BiliBiliMDDylib.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		37A99A68B9C9A99FBBE4BFB3 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				3FCEE99714C61D810F04834E /* Pods-BiliBiliMDDylib.debug.xcconfig */,
+				ACCB97C843C3C78F983C96BA /* Pods-BiliBiliMDDylib.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		BF0D02FE2DEDA95900115365 = {
 			isa = PBXGroup;
 			children = (
@@ -780,6 +805,7 @@
 				BF0D03262DEDA95900115365 /* BiliBiliMDDylib */,
 				BF0D031F2DEDA95900115365 /* Frameworks */,
 				BF0D030B2DEDA95900115365 /* Products */,
+				37A99A68B9C9A99FBBE4BFB3 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -803,6 +829,7 @@
 				BF0D03202DEDA95900115365 /* JavaScriptCore.framework */,
 				BF0D03222DEDA95900115365 /* Foundation.framework */,
 				BF0D03242DEDA95900115365 /* UIKit.framework */,
+				DBF86B72E4C90DC8C2CC938C /* Pods_BiliBiliMDDylib.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -954,6 +981,20 @@
 			path = Dispatcher;
 			sourceTree = "<group>";
 		};
+		BF5B30012F96A000008EB74C /* SponsorBlock */ = {
+			isa = PBXGroup;
+			children = (
+				BF5B20012F96A000008EB74C /* NJSponsorBlockSegment.h */,
+				BF5B20022F96A000008EB74C /* NJSponsorBlockSegment.m */,
+				BF5B20032F96A000008EB74C /* NJSponsorBlockService.h */,
+				BF5B20042F96A000008EB74C /* NJSponsorBlockService.m */,
+				BF5B20052F96A000008EB74C /* NJSponsorBlockManager.h */,
+				BF5B20062F96A000008EB74C /* NJSponsorBlockManager.m */,
+				BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */,
+			);
+			path = SponsorBlock;
+			sourceTree = "<group>";
+		};
 		BF9A71662F9469AB008EB74C /* Stage */ = {
 			isa = PBXGroup;
 			children = (
@@ -986,6 +1027,7 @@
 			isa = PBXGroup;
 			children = (
 				BF9A71542F9469AB008EB74C /* PlaybackRate */,
+				BF5B30012F96A000008EB74C /* SponsorBlock */,
 				BF9A716D2F9469AB008EB74C /* VerticalMode */,
 				BF9A716E2F9469AB008EB74C /* NJDetailAd.mm */,
 				BF9A716F2F9469AB008EB74C /* NJDetailAd.xm */,
@@ -1803,8 +1845,6 @@
 				BF0D030C2DEDA95900115365 /* BiliBiliMD */,
 			);
 			name = BiliBiliMD;
-			packageProductDependencies = (
-			);
 			productName = BiliBiliMD;
 			productReference = BF0D030A2DEDA95900115365 /* BiliBiliMD.app */;
 			productType = "com.apple.product-type.application";
@@ -1813,6 +1853,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF0D03642DEDA95900115365 /* Build configuration list for PBXNativeTarget "BiliBiliMDDylib" */;
 			buildPhases = (
+				1E9A1EB1EBD03488B439FD51 /* [CP] Check Pods Manifest.lock */,
 				BF0D03162DEDA95900115365 /* ShellScript */,
 				BF0D03172DEDA95900115365 /* Sources */,
 				BF0D03182DEDA95900115365 /* Frameworks */,
@@ -1823,8 +1864,6 @@
 			dependencies = (
 			);
 			name = BiliBiliMDDylib;
-			packageProductDependencies = (
-			);
 			productName = BiliBiliMDDylib;
 			productReference = BF0D031B2DEDA95900115365 /* libBiliBiliMDDylib.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
@@ -1877,6 +1916,28 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		1E9A1EB1EBD03488B439FD51 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-BiliBiliMDDylib-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		BF0D03052DEDA95900115365 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1947,6 +2008,10 @@
 				BF0D033C2DEDA95900115365 /* a1a2-selectortramps-arm64.s in Sources */,
 				BF0D033A2DEDA95900115365 /* a1a2-selectortramps-arm.s in Sources */,
 				BFDA21822E65CD7300E3249E /* fishhook.c in Sources */,
+				BF5B10012F96A000008EB74C /* NJSponsorBlockSegment.m in Sources */,
+				BF5B10022F96A000008EB74C /* NJSponsorBlockService.m in Sources */,
+				BF5B10032F96A000008EB74C /* NJSponsorBlockManager.m in Sources */,
+				BF5B10042F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm in Sources */,
 				BF9A73442F9469AB008EB74C /* mz_compat.c in Sources */,
 				BF9A73452F9469AB008EB74C /* NJSettingSwitchViewModel.m in Sources */,
 				BF9A73462F9469AB008EB74C /* UIColor+NJColor.m in Sources */,
@@ -2111,9 +2176,10 @@
 /* Begin XCBuildConfiguration section */
 		BF0D03652DEDA95900115365 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3FCEE99714C61D810F04834E /* Pods-BiliBiliMDDylib.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E435LNP339;
+				DEVELOPMENT_TEAM = YJSYGW69P9;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				ENABLE_BITCODE = NO;
@@ -2183,10 +2249,11 @@
 		};
 		BF0D03662DEDA95900115365 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = ACCB97C843C3C78F983C96BA /* Pods-BiliBiliMDDylib.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = YES;
-				DEVELOPMENT_TEAM = E435LNP339;
+				DEVELOPMENT_TEAM = YJSYGW69P9;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				ENABLE_BITCODE = NO;
@@ -2252,23 +2319,25 @@
 		BF0D03682DEDA95900115365 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BiliBiliMD/BiliBiliMD.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = E435LNP339;
+				DEVELOPMENT_TEAM = YJSYGW69P9;
 				ENABLE_BITCODE = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BiliBiliMD/Info.plist;
 				MARKETING_VERSION = 1.0;
 				MONKEYDEV_ADD_SUBSTRATE = YES;
 				MONKEYDEV_CLASS_DUMP = NO;
-				MONKEYDEV_DEFAULT_BUNDLEID = YES;
+				MONKEYDEV_DEFAULT_BUNDLEID = NO;
 				MONKEYDEV_INSERT_DYLIB = YES;
 				MONKEYDEV_RESTORE_SYMBOL = NO;
 				MONKEYDEV_TARGET_APP = "哔哩哔哩";
 				PODS_CONFIGURATION_BUILD_DIR = "$BUILD_DIR/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				PODS_ROOT = "${SRCROOT}/Pods";
-				PRODUCT_BUNDLE_IDENTIFIER = tv.danmaku.bilianime;
+				PRODUCT_BUNDLE_IDENTIFIER = boatv.danmaku.bilianime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -2279,23 +2348,25 @@
 		BF0D03692DEDA95900115365 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BiliBiliMD/BiliBiliMD.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = E435LNP339;
+				DEVELOPMENT_TEAM = YJSYGW69P9;
 				ENABLE_BITCODE = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BiliBiliMD/Info.plist;
 				MARKETING_VERSION = 1.0;
 				MONKEYDEV_ADD_SUBSTRATE = YES;
 				MONKEYDEV_CLASS_DUMP = NO;
-				MONKEYDEV_DEFAULT_BUNDLEID = YES;
+				MONKEYDEV_DEFAULT_BUNDLEID = NO;
 				MONKEYDEV_INSERT_DYLIB = YES;
 				MONKEYDEV_RESTORE_SYMBOL = NO;
 				MONKEYDEV_TARGET_APP = "哔哩哔哩";
 				PODS_CONFIGURATION_BUILD_DIR = "$BUILD_DIR/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				PODS_ROOT = "${SRCROOT}/Pods";
-				PRODUCT_BUNDLE_IDENTIFIER = tv.danmaku.bilianime;
+				PRODUCT_BUNDLE_IDENTIFIER = boatv.danmaku.bilianime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
