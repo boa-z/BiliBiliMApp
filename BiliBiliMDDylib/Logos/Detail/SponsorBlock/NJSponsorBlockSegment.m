@@ -43,7 +43,7 @@
 }
 
 - (BOOL)containsPlaybackTime:(NSTimeInterval)time {
-    return time >= self.startTime && time < self.endTime - 0.3;
+    return time >= self.startTime && time < self.endTime;
 }
 
 - (void)encodeWithCoder:(NSCoder *)coder {

@@ -43,6 +43,8 @@
 		BF5B10032F96A000008EB74C /* NJSponsorBlockManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20062F96A000008EB74C /* NJSponsorBlockManager.m */; };
 		BF5B10042F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */; };
 		BF5B10052F96A000008EB74C /* NJSponsorBlockPanelView.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20092F96A000008EB74C /* NJSponsorBlockPanelView.m */; };
+		BF5B10102F96A000008EB74C /* NJSponsorBlockSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20112F96A000008EB74C /* NJSponsorBlockSettings.m */; };
+		BF5B10112F96A000008EB74C /* NJSponsorBlockSettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5B20132F96A000008EB74C /* NJSponsorBlockSettingViewController.m */; };
 		BF9A72A22F9469AB008EB74C /* BAPIAppCardV1Base.h in Headers */ = {isa = PBXBuildFile; fileRef = BF9A71912F9469AB008EB74C /* BAPIAppCardV1Base.h */; };
 		BF9A72A32F9469AB008EB74C /* NJAnimeChannelCardHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = BF9A717E2F9469AB008EB74C /* NJAnimeChannelCardHandler.h */; };
 		BF9A72A42F9469AB008EB74C /* NJSettingPublishTableViewCell.h in Headers */ = {isa = PBXBuildFile; fileRef = BF9A720C2F9469AB008EB74C /* NJSettingPublishTableViewCell.h */; };
@@ -416,6 +418,10 @@
 		BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NJSponsorBlockPlaybackHook.mm; sourceTree = "<group>"; };
 		BF5B20082F96A000008EB74C /* NJSponsorBlockPanelView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockPanelView.h; sourceTree = "<group>"; };
 		BF5B20092F96A000008EB74C /* NJSponsorBlockPanelView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockPanelView.m; sourceTree = "<group>"; };
+		BF5B20102F96A000008EB74C /* NJSponsorBlockSettings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockSettings.h; sourceTree = "<group>"; };
+		BF5B20112F96A000008EB74C /* NJSponsorBlockSettings.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockSettings.m; sourceTree = "<group>"; };
+		BF5B20122F96A000008EB74C /* NJSponsorBlockSettingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NJSponsorBlockSettingViewController.h; sourceTree = "<group>"; };
+		BF5B20132F96A000008EB74C /* NJSponsorBlockSettingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NJSponsorBlockSettingViewController.m; sourceTree = "<group>"; };
 		BF9A71312F9469AB008EB74C /* NSBundle+NJBundleCategory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSBundle+NJBundleCategory.h"; sourceTree = "<group>"; };
 		BF9A71322F9469AB008EB74C /* NSBundle+NJBundleCategory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSBundle+NJBundleCategory.m"; sourceTree = "<group>"; };
 		BF9A71332F9469AB008EB74C /* NSBundle+NJImageLoading.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSBundle+NJImageLoading.h"; sourceTree = "<group>"; };
@@ -931,6 +937,10 @@
 				BF5B20072F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm */,
 				BF5B20082F96A000008EB74C /* NJSponsorBlockPanelView.h */,
 				BF5B20092F96A000008EB74C /* NJSponsorBlockPanelView.m */,
+				BF5B20102F96A000008EB74C /* NJSponsorBlockSettings.h */,
+				BF5B20112F96A000008EB74C /* NJSponsorBlockSettings.m */,
+				BF5B20122F96A000008EB74C /* NJSponsorBlockSettingViewController.h */,
+				BF5B20132F96A000008EB74C /* NJSponsorBlockSettingViewController.m */,
 			);
 			path = SponsorBlock;
 			sourceTree = "<group>";
@@ -2018,6 +2028,8 @@
 				BF5B10032F96A000008EB74C /* NJSponsorBlockManager.m in Sources */,
 				BF5B10042F96A000008EB74C /* NJSponsorBlockPlaybackHook.mm in Sources */,
 				BF5B10052F96A000008EB74C /* NJSponsorBlockPanelView.m in Sources */,
+				BF5B10102F96A000008EB74C /* NJSponsorBlockSettings.m in Sources */,
+				BF5B10112F96A000008EB74C /* NJSponsorBlockSettingViewController.m in Sources */,
 				BF9A73442F9469AB008EB74C /* mz_compat.c in Sources */,
 				BF9A73452F9469AB008EB74C /* NJSettingSwitchViewModel.m in Sources */,
 				BF9A73462F9469AB008EB74C /* UIColor+NJColor.m in Sources */,

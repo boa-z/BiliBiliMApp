@@ -13,6 +13,8 @@
 #import "NJInlineSettingViewController.h"
 #import "NJChangePlaybackRateTool.h"
 #import "NJSettingCache.h"
+#import "NJSponsorBlockSettingViewController.h"
+#import "NJSponsorBlockSettings.h"
 
 // 官网地址
 #define NJ_OFFICIAL_WEBSITE_URL_STR @"https://github.com/TouchFriend/BiliBiliMApp"
@@ -49,6 +51,10 @@
     self.dataProvider = [[NJSettingInjectDataProvider alloc] init];
     self.injectDatas = self.dataProvider.injectDatas;
     self.isRebootTip = NO;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleSponsorBlockSettingsDidChange)
+                                                 name:NJSponsorBlockSettingsDidChangeNotification
+                                               object:nil];
 }
 
 - (void)initEventManager {
@@ -88,6 +94,12 @@
     // 关注的默认版块
     if ([bizId isEqualToString:NJ_FOLLOW_DEFAULT_TAB]) {
         [self handleFollowDefaultTabWithViewModel:viewModel];
+        return;
+    }
+    // SponsorBlock 设置页
+    if ([bizId isEqualToString:NJ_SPONSOR_BLOCK_SETTING_PAGE_BIZ_ID]) {
+        NJSponsorBlockSettingViewController *settingVC = [[NJSponsorBlockSettingViewController alloc] init];
+        [self.settingViewController.navigationController pushViewController:settingVC animated:YES];
         return;
     }
 }
@@ -147,6 +159,15 @@
     // 保存
     [[NJSettingCache sharedInstance] saveFollowDefaultTab:model.bizId];
     [self.tableView reloadData];
+}
+
+- (void)handleSponsorBlockSettingsDidChange {
+    self.injectDatas = self.dataProvider.injectDatas;
+    [self.tableView reloadData];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)aSwitchChange:(UISwitch *)aSwitch

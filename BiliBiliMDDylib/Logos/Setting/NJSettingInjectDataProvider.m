@@ -13,6 +13,7 @@
 #import "NJCommonDefine.h"
 #import "NJSettingCache.h"
 #import "NJInlineSettingModel.h"
+#import "NJSponsorBlockSettings.h"
 
 @implementation NJSettingInjectDataProvider
 
@@ -47,10 +48,7 @@
                                                            cellId:NJ_SWITCH_CELL_ID
                                                             title:@"竖屏模式"
                                                                   on:NJ_VERTICAL_SCREEN_MODE_VALUE saveKey:NJ_VERTICAL_SCREEN_MODE_KEY]];
-    [datas addObject:[[NJSettingSwitchViewModel alloc] initWithBizId:NJ_SPONSOR_BLOCK_BIZ_ID
-                                                           cellId:NJ_SWITCH_CELL_ID
-                                                            title:@"SponsorBlock 跳过片段"
-                                                                  on:NJ_SPONSOR_BLOCK_VALUE saveKey:NJ_SPONSOR_BLOCK_KEY]];
+    [datas addObject:[self sponsorBlockSettingPage]];
     [datas addObject:[[NJSettingSkullViewModel alloc] initWithBizId:NJ_SHARE_DATA_BIZ_ID
                                                              cellId:NJ_COMMON_CELL_ID
                                                               title:@"分享数据"]];
@@ -88,6 +86,15 @@
         }
     }
     return @"";
+}
+
+/// SponsorBlock 设置页
+- (NJSettingSkullViewModel *)sponsorBlockSettingPage {
+    NJSettingSkullViewModel *model = [[NJSettingSkullViewModel alloc] initWithBizId:NJ_SPONSOR_BLOCK_SETTING_PAGE_BIZ_ID
+                                                                             cellId:NJ_ARROW_CELL_ID
+                                                                              title:@"SponsorBlock"];
+    model.subTitle = [NJSponsorBlockSettings enabled] ? @"已启用" : @"已关闭";
+    return model;
 }
 
 /// 关注的版块数据
