@@ -11,6 +11,10 @@
 
 static CGFloat const NJSponsorBlockPanelWidth = 310.0;
 static CGFloat const NJSponsorBlockPanelMinHeight = 154.0;
+static CGFloat const NJSponsorBlockPanelCollapsedHeight = 64.0;
+static CGFloat const NJSponsorBlockPanelMargin = 12.0;
+static CGFloat const NJSponsorBlockPanelTopMargin = 48.0;
+static CGFloat const NJSponsorBlockPanelBottomMargin = 24.0;
 static NSTimeInterval const NJSponsorBlockOverlayIdleTimeout = 4.0;
 
 @interface NJSponsorBlockOverlayWindow : UIWindow
@@ -30,6 +34,8 @@ static NSTimeInterval const NJSponsorBlockOverlayIdleTimeout = 4.0;
 
 @interface NJSponsorBlockPanelView ()
 
+@property (nonatomic, strong) UIStackView *headerStack;
+@property (nonatomic, strong) UIStackView *footerStack;
 @property (nonatomic, strong) UILabel *iconLabel;
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UILabel *subtitleLabel;
@@ -65,7 +71,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     if (overlayHostView) {
         return overlayHostView;
     }
-    
+
     NSArray<UIWindow *> *windows = UIApplication.sharedApplication.windows;
     UIWindow *bestWindow = nil;
     for (UIWindow *window in windows) {
@@ -87,13 +93,13 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     if (![NSThread isMainThread]) {
         return nil;
     }
-    
+
     if (!NJSponsorBlockSharedOverlayController) {
         NJSponsorBlockSharedOverlayController = [[UIViewController alloc] init];
         NJSponsorBlockSharedOverlayController.view.backgroundColor = UIColor.clearColor;
         NJSponsorBlockSharedOverlayController.view.userInteractionEnabled = YES;
     }
-    
+
     if (!NJSponsorBlockSharedOverlayWindow) {
         CGRect frame = UIScreen.mainScreen.bounds;
         NJSponsorBlockSharedOverlayWindow = [[NJSponsorBlockOverlayWindow alloc] initWithFrame:frame];
@@ -103,14 +109,14 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
         NJSponsorBlockSharedOverlayWindow.hidden = NO;
         NSLog(@"[NJSponsorBlock] overlay window created %@", NJSponsorBlockSharedOverlayWindow);
     }
-    
+
     if (@available(iOS 13.0, *)) {
         UIWindowScene *activeScene = [self activeWindowScene];
         if (activeScene && NJSponsorBlockSharedOverlayWindow.windowScene != activeScene) {
             NJSponsorBlockSharedOverlayWindow.windowScene = activeScene;
         }
     }
-    
+
     NJSponsorBlockSharedOverlayWindow.frame = UIScreen.mainScreen.bounds;
     NJSponsorBlockSharedOverlayWindow.hidden = NO;
     [NJSponsorBlockSharedOverlayWindow bringSubviewToFront:NJSponsorBlockSharedOverlayController.view];
@@ -120,7 +126,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
 + (void)markPlaybackActive {
     dispatch_async(dispatch_get_main_queue(), ^{
         NJSponsorBlockLastPlaybackActiveTime = CACurrentMediaTime();
-        if (NJSponsorBlockSharedOverlayWindow.hidden) {
+        if (NJSponsorBlockSharedOverlayWindow && NJSponsorBlockSharedOverlayWindow.hidden) {
             NJSponsorBlockSharedOverlayWindow.hidden = NO;
         }
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideOverlayIfIdle) object:nil];
@@ -140,12 +146,13 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
 + (void)hideOverlay {
     dispatch_async(dispatch_get_main_queue(), ^{
         [[self sharedPanel] removeFromSuperview];
-        [[self sharedEntryButton] removeFromSuperview];
         [[self sharedTimelineView] removeFromSuperview];
-        for (UIView *timeline in NJSponsorBlockNativeTimelineViews.allObjects) {
-            [timeline removeFromSuperview];
+        if (NJSponsorBlockNativeTimelineViews) {
+            for (UIView *timeline in NJSponsorBlockNativeTimelineViews.allObjects) {
+                [timeline removeFromSuperview];
+            }
+            [NJSponsorBlockNativeTimelineViews removeAllObjects];
         }
-        [NJSponsorBlockNativeTimelineViews removeAllObjects];
         if (NJSponsorBlockSharedOverlayWindow) {
             NJSponsorBlockSharedOverlayWindow.hidden = YES;
         }
@@ -177,6 +184,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     dispatch_once(&onceToken, ^{
         button = [UIButton buttonWithType:UIButtonTypeCustom];
         button.frame = CGRectMake(0, 0, 38, 38);
+        button.accessibilityIdentifier = @"NJSponsorBlockEntryButton";
         button.backgroundColor = [UIColor colorWithWhite:0 alpha:0.36];
         button.layer.cornerRadius = 19;
         button.layer.borderWidth = 1;
@@ -211,7 +219,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
         return;
     }
     [self markPlaybackActive];
-    
+
     UIButton *button = [self sharedEntryButton];
     if (button.superview != hostView) {
         [button removeFromSuperview];
@@ -242,7 +250,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     if (!hostView || !hostView.window) {
         return;
     }
-    
+
     UIButton *button = [self sharedEntryButton];
     if (button.superview != hostView) {
         [button removeFromSuperview];
@@ -264,7 +272,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     CGRect containerFrame = [container convertRect:container.bounds toView:hostView];
     CGFloat x = CGRectGetMinX(containerFrame) - width - spacing;
     CGFloat y = CGRectGetMidY(containerFrame) - height * 0.5;
-    
+
     CGFloat maxX = CGRectGetWidth(hostView.bounds) - width;
     CGFloat maxY = CGRectGetHeight(hostView.bounds) - height;
     if (maxX >= 0.0) {
@@ -273,10 +281,14 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     if (maxY >= 0.0) {
         y = MIN(MAX(0.0, y), maxY);
     }
-    
+
     button.frame = CGRectMake(x, y, width, height);
 
     [self refresh];
+}
+
++ (void)installEntryBesideButtonGroup:(UIView *)buttonGroup {
+    [self installEntryDirectlyInContainer:buttonGroup];
 }
 
 + (void)setEntryAnchorView:(UIView *)view {
@@ -308,7 +320,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     if (!NJSponsorBlockNativeTimelineViews) {
         NJSponsorBlockNativeTimelineViews = [NSHashTable weakObjectsHashTable];
     }
-    
+
     UIView *timeline = objc_getAssociatedObject(view, NJSponsorBlockNativeTimelineKey);
     if (!timeline) {
         timeline = [[UIView alloc] initWithFrame:CGRectZero];
@@ -318,7 +330,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
         objc_setAssociatedObject(view, NJSponsorBlockNativeTimelineKey, timeline, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         [NJSponsorBlockNativeTimelineViews addObject:timeline];
     }
-    
+
     if (timeline.superview != view) {
         [timeline removeFromSuperview];
         [view addSubview:timeline];
@@ -333,7 +345,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     if (!view || !NJ_MASTER_SWITCH_VALUE) {
         return;
     }
-    
+
     NJSponsorBlockPanelView *panel = [self sharedPanel];
     if (panel.superview != view) {
         [panel removeFromSuperview];
@@ -364,31 +376,81 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
 }
 
 + (void)togglePanelFromEntryButton:(UIButton *)button {
-    UIView *view = [self currentHostView] ?: button.superview;
+    UIView *view = [self panelHostViewForEntryButton:button];
     if (!view) {
         return;
     }
-    
+
     NJSponsorBlockPanelView *panel = [self sharedPanel];
     if (panel.superview) {
-        [panel removeFromSuperview];
+        [self hidePanelAnimated];
         return;
     }
-    
+
     [self installInView:view];
     CGRect buttonFrame = [view convertRect:button.bounds fromView:button];
     CGRect frame = panel.frame;
-    frame.origin.x = MIN(MAX(12, CGRectGetMinX(buttonFrame) - 206), CGRectGetWidth(view.bounds) - CGRectGetWidth(frame) - 12);
-    frame.origin.y = CGRectGetMaxY(buttonFrame) + 10;
+    CGFloat spacing = 8.0;
+    frame.origin.x = CGRectGetMaxX(buttonFrame) - CGRectGetWidth(frame);
+    frame.origin.y = CGRectGetMaxY(buttonFrame) + spacing;
+
+    CGFloat minX = NJSponsorBlockPanelMargin;
+    CGFloat maxX = CGRectGetWidth(view.bounds) - CGRectGetWidth(frame) - NJSponsorBlockPanelMargin;
+    CGFloat minY = NJSponsorBlockPanelTopMargin;
+    CGFloat maxY = CGRectGetHeight(view.bounds) - CGRectGetHeight(frame) - NJSponsorBlockPanelBottomMargin;
+    frame.origin.x = MIN(MAX(minX, frame.origin.x), MAX(minX, maxX));
+    frame.origin.y = MIN(MAX(minY, frame.origin.y), MAX(minY, maxY));
     panel.frame = frame;
     [panel keepInsideSuperview];
+    [self showPanelAnimated:panel];
+}
+
++ (UIView *)panelHostViewForEntryButton:(UIButton *)button {
+    if (button.window) {
+        return button.window;
+    }
+    if (button.superview) {
+        return button.superview;
+    }
+    return [self currentHostView];
+}
+
++ (void)showPanelAnimated:(NJSponsorBlockPanelView *)panel {
+    panel.alpha = 0.0;
+    panel.transform = CGAffineTransformMakeScale(0.96, 0.96);
+    [UIView animateWithDuration:0.18
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:^{
+        panel.alpha = 1.0;
+        panel.transform = CGAffineTransformIdentity;
+    } completion:nil];
+}
+
++ (void)hidePanelAnimated {
+    NJSponsorBlockPanelView *panel = [self sharedPanel];
+    if (!panel.superview) {
+        return;
+    }
+
+    [UIView animateWithDuration:0.16
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseIn
+                     animations:^{
+        panel.alpha = 0.0;
+        panel.transform = CGAffineTransformMakeScale(0.96, 0.96);
+    } completion:^(__unused BOOL finished) {
+        [panel removeFromSuperview];
+        panel.alpha = 1.0;
+        panel.transform = CGAffineTransformIdentity;
+    }];
 }
 
 + (void)layoutEntryButton:(UIButton *)button inView:(UIView *)view {
     UIEdgeInsets insets = view.safeAreaInsets;
     CGRect bounds = view.bounds;
     BOOL portrait = CGRectGetHeight(bounds) >= CGRectGetWidth(bounds);
-    
+
     UIView *anchorView = NJSponsorBlockEntryAnchorView;
     if (anchorView && !anchorView.hidden && anchorView.alpha > 0.01 && anchorView.window) {
         CGRect anchorFrame = [anchorView convertRect:anchorView.bounds toView:nil];
@@ -402,7 +464,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
                                   38.0);
         return;
     }
-    
+
     CGFloat x = portrait ? CGRectGetWidth(bounds) - insets.right - 132.0 : CGRectGetWidth(bounds) - insets.right - 132.0;
     CGFloat y = portrait ? insets.top + 64.0 : insets.top + 22.0;
     button.frame = CGRectMake(MAX(insets.left + 8.0, x), y, 38.0, 38.0);
@@ -431,14 +493,14 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     if (!timeline.superview) {
         return;
     }
-    
+
     [timeline.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     NJSponsorBlockManager *manager = [NJSponsorBlockManager sharedInstance];
     NSTimeInterval duration = manager.estimatedVideoDuration;
     if (duration <= 0 || manager.segments.count == 0) {
         return;
     }
-    
+
     CGFloat width = CGRectGetWidth(timeline.bounds);
     CGFloat height = CGRectGetHeight(timeline.bounds);
     for (NJSponsorBlockSegment *segment in manager.segments) {
@@ -460,11 +522,20 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     if ([category isEqualToString:@"outro"]) {
         return [UIColor colorWithRed:0.92 green:0.40 blue:0.95 alpha:0.95];
     }
+    if ([category isEqualToString:@"selfpromo"]) {
+        return [UIColor colorWithRed:1.00 green:0.65 blue:0.10 alpha:0.95];
+    }
+    if ([category isEqualToString:@"preview"] || [category isEqualToString:@"poi_highlight"]) {
+        return [UIColor colorWithRed:1.00 green:0.86 blue:0.18 alpha:0.95];
+    }
+    if ([category isEqualToString:@"filler"] || [category isEqualToString:@"music_offtopic"]) {
+        return [UIColor colorWithRed:0.55 green:0.72 blue:1.00 alpha:0.95];
+    }
     return [UIColor colorWithRed:0.02 green:0.70 blue:0.95 alpha:0.95];
 }
 
 + (void)hidePanelOnly {
-    [[self sharedPanel] removeFromSuperview];
+    [self hidePanelAnimated];
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -485,144 +556,190 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
 }
 
 - (void)setupViews {
-    self.backgroundColor = [UIColor colorWithWhite:0.08 alpha:0.88];
-    self.layer.cornerRadius = 12;
-    self.layer.borderWidth = 1;
-    self.layer.borderColor = [UIColor colorWithWhite:1 alpha:0.14].CGColor;
-    self.layer.masksToBounds = YES;
-    
+    self.backgroundColor = [UIColor colorWithWhite:0.06 alpha:0.86];
+    self.layer.cornerRadius = 14.0;
+    self.layer.borderWidth = 0.5;
+    self.layer.borderColor = [UIColor colorWithWhite:1 alpha:0.16].CGColor;
+    self.layer.shadowColor = UIColor.blackColor.CGColor;
+    self.layer.shadowOpacity = 0.28;
+    self.layer.shadowRadius = 18.0;
+    self.layer.shadowOffset = CGSizeMake(0, 8);
+    self.layer.masksToBounds = NO;
+
     self.iconLabel = [[UILabel alloc] init];
     self.iconLabel.text = @"▷";
     self.iconLabel.textColor = [UIColor colorWithRed:0.02 green:0.70 blue:0.95 alpha:1.0];
     self.iconLabel.font = [UIFont boldSystemFontOfSize:28];
     self.iconLabel.textAlignment = NSTextAlignmentCenter;
-    
+
     self.titleLabel = [[UILabel alloc] init];
     self.titleLabel.textColor = UIColor.whiteColor;
     self.titleLabel.font = [UIFont boldSystemFontOfSize:17];
-    
+
     self.subtitleLabel = [[UILabel alloc] init];
     self.subtitleLabel.textColor = [UIColor colorWithWhite:0.72 alpha:1];
     self.subtitleLabel.font = [UIFont systemFontOfSize:12 weight:UIFontWeightMedium];
-    
+
     self.collapseButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [self.collapseButton setTitle:@"－" forState:UIControlStateNormal];
     self.collapseButton.tintColor = UIColor.whiteColor;
     self.collapseButton.titleLabel.font = [UIFont boldSystemFontOfSize:20];
     [self.collapseButton addTarget:self action:@selector(toggleCollapsed) forControlEvents:UIControlEventTouchUpInside];
-    
+
     UIStackView *headerTextStack = [[UIStackView alloc] initWithArrangedSubviews:@[self.titleLabel, self.subtitleLabel]];
     headerTextStack.axis = UILayoutConstraintAxisVertical;
     headerTextStack.spacing = 2;
-    
-    UIStackView *headerStack = [[UIStackView alloc] initWithArrangedSubviews:@[self.iconLabel, headerTextStack, self.collapseButton]];
-    headerStack.axis = UILayoutConstraintAxisHorizontal;
-    headerStack.alignment = UIStackViewAlignmentCenter;
-    headerStack.spacing = 8;
-    headerStack.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:headerStack];
-    
+
+    self.headerStack = [[UIStackView alloc] initWithArrangedSubviews:@[self.iconLabel, headerTextStack, self.collapseButton]];
+    self.headerStack.axis = UILayoutConstraintAxisHorizontal;
+    self.headerStack.alignment = UIStackViewAlignmentCenter;
+    self.headerStack.spacing = 8;
+    self.headerStack.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:self.headerStack];
+
     self.segmentStackView = [[UIStackView alloc] init];
     self.segmentStackView.axis = UILayoutConstraintAxisVertical;
     self.segmentStackView.spacing = 6;
     self.segmentStackView.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:self.segmentStackView];
-    
+
     self.progressView = [[UIView alloc] init];
     self.progressView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.10];
     self.progressView.layer.cornerRadius = 3;
     self.progressView.layer.masksToBounds = YES;
     self.progressView.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:self.progressView];
-    
+
     self.toggleButton = [UIButton buttonWithType:UIButtonTypeSystem];
     self.toggleButton.layer.cornerRadius = 15;
     self.toggleButton.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
     [self.toggleButton addTarget:self action:@selector(toggleEnabled) forControlEvents:UIControlEventTouchUpInside];
-    
+
     self.timeLabel = [[UILabel alloc] init];
     self.timeLabel.textColor = [UIColor colorWithWhite:0.82 alpha:1];
     self.timeLabel.font = [UIFont monospacedDigitSystemFontOfSize:12 weight:UIFontWeightSemibold];
     self.timeLabel.textAlignment = NSTextAlignmentRight;
-    
-    UIStackView *footerStack = [[UIStackView alloc] initWithArrangedSubviews:@[self.toggleButton, self.timeLabel]];
-    footerStack.axis = UILayoutConstraintAxisHorizontal;
-    footerStack.alignment = UIStackViewAlignmentCenter;
-    footerStack.distribution = UIStackViewDistributionFill;
-    footerStack.spacing = 10;
-    footerStack.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:footerStack];
-    
+
+    self.footerStack = [[UIStackView alloc] initWithArrangedSubviews:@[self.toggleButton, self.timeLabel]];
+    self.footerStack.axis = UILayoutConstraintAxisHorizontal;
+    self.footerStack.alignment = UIStackViewAlignmentCenter;
+    self.footerStack.distribution = UIStackViewDistributionFill;
+    self.footerStack.spacing = 10;
+    self.footerStack.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:self.footerStack];
+
     UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     [self addGestureRecognizer:pan];
-    
+
     [NSLayoutConstraint activateConstraints:@[
         [self.iconLabel.widthAnchor constraintEqualToConstant:34],
         [self.collapseButton.widthAnchor constraintEqualToConstant:32],
         [self.toggleButton.widthAnchor constraintEqualToConstant:84],
         [self.toggleButton.heightAnchor constraintEqualToConstant:30],
-        
-        [headerStack.topAnchor constraintEqualToAnchor:self.topAnchor constant:12],
-        [headerStack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
-        [headerStack.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-10],
-        
-        [self.segmentStackView.topAnchor constraintEqualToAnchor:headerStack.bottomAnchor constant:10],
+
+        [self.headerStack.topAnchor constraintEqualToAnchor:self.topAnchor constant:12],
+        [self.headerStack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
+        [self.headerStack.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-10],
+
+        [self.segmentStackView.topAnchor constraintEqualToAnchor:self.headerStack.bottomAnchor constant:10],
         [self.segmentStackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
         [self.segmentStackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-12],
-        
+
         [self.progressView.topAnchor constraintEqualToAnchor:self.segmentStackView.bottomAnchor constant:10],
         [self.progressView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
         [self.progressView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-12],
         [self.progressView.heightAnchor constraintEqualToConstant:6],
-        
-        [footerStack.topAnchor constraintEqualToAnchor:self.progressView.bottomAnchor constant:10],
-        [footerStack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
-        [footerStack.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-12],
-        [footerStack.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-12],
+
+        [self.footerStack.topAnchor constraintEqualToAnchor:self.progressView.bottomAnchor constant:10],
+        [self.footerStack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
+        [self.footerStack.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-12],
+        [self.footerStack.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-12],
     ]];
 }
 
 - (void)refreshContent {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    if ([NSThread isMainThread]) {
         [self refreshContentOnMainThread];
-    });
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self refreshContentOnMainThread];
+        });
+    }
 }
 
 - (void)refreshContentOnMainThread {
     NJSponsorBlockManager *manager = [NJSponsorBlockManager sharedInstance];
     NSArray<NJSponsorBlockSegment *> *segments = manager.segments ?: @[];
     BOOL enabled = NJ_SPONSOR_BLOCK_VALUE;
-    
+
     self.hidden = !NJ_MASTER_SWITCH_VALUE;
     self.titleLabel.text = @"小电视空降助手";
-    if (segments.count > 0) {
-        self.subtitleLabel.text = [NSString stringWithFormat:@"数据库中有 %lu 个可跳过片段", (unsigned long)segments.count];
-    } else if (manager.videoID.length > 0) {
-        self.subtitleLabel.text = @"当前视频暂无可跳过片段";
+    if (self.collapsed) {
+        if (segments.count > 0) {
+            self.subtitleLabel.text = [NSString stringWithFormat:@"%lu 个片段", (unsigned long)segments.count];
+        } else if (manager.videoID.length > 0) {
+            self.subtitleLabel.text = @"暂无片段";
+        } else {
+            self.subtitleLabel.text = @"等待识别";
+        }
     } else {
-        self.subtitleLabel.text = @"等待识别当前视频";
+        if (segments.count > 0) {
+            self.subtitleLabel.text = [NSString stringWithFormat:@"数据库中有 %lu 个可跳过片段", (unsigned long)segments.count];
+        } else if (manager.videoID.length > 0) {
+            self.subtitleLabel.text = @"当前视频暂无可跳过片段";
+        } else {
+            self.subtitleLabel.text = @"等待识别当前视频";
+        }
     }
-    
+
     [self.toggleButton setTitle:(enabled ? @"已启用" : @"已关闭") forState:UIControlStateNormal];
     self.toggleButton.backgroundColor = enabled ? [UIColor colorWithRed:0 green:0.70 blue:0.05 alpha:1] : [UIColor colorWithWhite:0.30 alpha:1];
     [self.toggleButton setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
     self.timeLabel.text = [NSString stringWithFormat:@"当前 %@", [self stringFromTime:manager.currentPlaybackTime]];
-    
-    [self.segmentStackView.arrangedSubviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+
+    [self clearSegmentRows];
     [self renderPanelProgressWithSegments:segments duration:manager.estimatedVideoDuration];
     if (!self.collapsed) {
         NSUInteger count = MIN(segments.count, 3);
         for (NSUInteger i = 0; i < count; i++) {
             [self.segmentStackView addArrangedSubview:[self rowForSegment:segments[i] currentTime:manager.currentPlaybackTime]];
         }
+        if (segments.count > count) {
+            [self.segmentStackView addArrangedSubview:[self moreRowWithCount:segments.count - count]];
+        }
         if (segments.count == 0) {
             [self.segmentStackView addArrangedSubview:[self emptyRow]];
         }
     }
-    [self.collapseButton setTitle:(self.collapsed ? @"＋" : @"－") forState:UIControlStateNormal];
+    [self applyCollapsedState];
     [self resizeForContent];
     [[self class] renderTimeline:[[self class] sharedTimelineView]];
     [[self class] refreshNativeTimelines];
+}
+
+- (void)applyCollapsedState {
+    BOOL hideContent = self.collapsed;
+
+    self.segmentStackView.hidden = hideContent;
+    self.segmentStackView.userInteractionEnabled = !hideContent;
+
+    self.progressView.hidden = hideContent;
+    self.progressView.userInteractionEnabled = !hideContent;
+
+    self.footerStack.hidden = hideContent;
+    self.footerStack.userInteractionEnabled = !hideContent;
+
+    [self.collapseButton setTitle:(self.collapsed ? @"＋" : @"－") forState:UIControlStateNormal];
+
+    [self bringSubviewToFront:self.headerStack];
+    [self.headerStack bringSubviewToFront:self.collapseButton];
+}
+
+- (void)clearSegmentRows {
+    for (UIView *view in self.segmentStackView.arrangedSubviews.copy) {
+        [self.segmentStackView removeArrangedSubview:view];
+        [view removeFromSuperview];
+    }
 }
 
 - (void)renderPanelProgressWithSegments:(NSArray<NJSponsorBlockSegment *> *)segments duration:(NSTimeInterval)duration {
@@ -630,7 +747,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     if (duration <= 0 || segments.count == 0) {
         return;
     }
-    
+
     CGFloat width = CGRectGetWidth(self.bounds) > 0 ? CGRectGetWidth(self.bounds) - 24.0 : NJSponsorBlockPanelWidth - 24.0;
     for (NJSponsorBlockSegment *segment in segments) {
         CGFloat startX = MAX(0, MIN(width, width * segment.startTime / duration));
@@ -646,30 +763,30 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     BOOL active = [segment containsPlaybackTime:currentTime];
     row.backgroundColor = active ? [UIColor colorWithRed:0.00 green:0.55 blue:0.58 alpha:0.92] : [UIColor colorWithWhite:1 alpha:0.08];
     row.layer.cornerRadius = 8;
-    
+
     UILabel *dot = [[UILabel alloc] init];
     dot.text = @"●";
     dot.textColor = [segment.category isEqualToString:@"sponsor"] ? [UIColor colorWithRed:0 green:0.90 blue:0.10 alpha:1] : UIColor.cyanColor;
     dot.font = [UIFont systemFontOfSize:14 weight:UIFontWeightBold];
-    
+
     UILabel *categoryLabel = [[UILabel alloc] init];
     categoryLabel.text = [self titleForCategory:segment.category];
     categoryLabel.textColor = UIColor.whiteColor;
     categoryLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightBold];
-    
+
     UILabel *timeLabel = [[UILabel alloc] init];
     timeLabel.text = [NSString stringWithFormat:@"%@ 到 %@", [self stringFromTime:segment.startTime], [self stringFromTime:segment.endTime]];
     timeLabel.textColor = UIColor.whiteColor;
     timeLabel.font = [UIFont monospacedDigitSystemFontOfSize:13 weight:UIFontWeightSemibold];
     timeLabel.textAlignment = NSTextAlignmentRight;
-    
+
     UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[dot, categoryLabel, timeLabel]];
     stack.axis = UILayoutConstraintAxisHorizontal;
     stack.alignment = UIStackViewAlignmentCenter;
     stack.spacing = 8;
     stack.translatesAutoresizingMaskIntoConstraints = NO;
     [row addSubview:stack];
-    
+
     [NSLayoutConstraint activateConstraints:@[
         [row.heightAnchor constraintEqualToConstant:34],
         [dot.widthAnchor constraintEqualToConstant:16],
@@ -691,6 +808,16 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     return label;
 }
 
+- (UIView *)moreRowWithCount:(NSUInteger)count {
+    UILabel *label = [[UILabel alloc] init];
+    label.text = [NSString stringWithFormat:@"还有 %lu 个片段未显示", (unsigned long)count];
+    label.textColor = [UIColor colorWithWhite:0.70 alpha:1.0];
+    label.font = [UIFont systemFontOfSize:12 weight:UIFontWeightMedium];
+    label.textAlignment = NSTextAlignmentCenter;
+    [label.heightAnchor constraintEqualToConstant:24].active = YES;
+    return label;
+}
+
 - (void)toggleEnabled {
     BOOL next = !NJ_SPONSOR_BLOCK_VALUE;
     [NJ_SETTING_CACHE setObject:@(next) forKey:NJ_SPONSOR_BLOCK_KEY withBlock:nil];
@@ -699,7 +826,19 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
 
 - (void)toggleCollapsed {
     self.collapsed = !self.collapsed;
-    [self refreshContent];
+
+    if ([NSThread isMainThread]) {
+        [self refreshContentOnMainThread];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self refreshContentOnMainThread];
+        });
+    }
+
+    self.alpha = 0.94;
+    [UIView animateWithDuration:0.16 animations:^{
+        self.alpha = 1.0;
+    }];
 }
 
 - (void)handlePan:(UIPanGestureRecognizer *)pan {
@@ -707,7 +846,7 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     if (!superview) {
         return;
     }
-    
+
     CGPoint translation = [pan translationInView:superview];
     self.center = CGPointMake(self.center.x + translation.x, self.center.y + translation.y);
     [pan setTranslation:CGPointZero inView:superview];
@@ -717,13 +856,20 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
 }
 
 - (void)resizeForContent {
-    CGFloat height = self.collapsed ? 72.0 : NJSponsorBlockPanelMinHeight;
+    UIView *superview = self.superview;
+    if (!superview) {
+        return;
+    }
+
+    CGFloat height = self.collapsed ? NJSponsorBlockPanelCollapsedHeight : NJSponsorBlockPanelMinHeight;
     if (!self.collapsed) {
         height += MAX(0, self.segmentStackView.arrangedSubviews.count - 1) * 40.0;
     }
-    
+
     CGRect frame = self.frame;
-    frame.size.width = MIN(NJSponsorBlockPanelWidth, self.superview.bounds.size.width - 24);
+    CGFloat availableWidth = CGRectGetWidth(superview.bounds) - NJSponsorBlockPanelMargin * 2.0;
+    frame.size.width = MIN(NJSponsorBlockPanelWidth, availableWidth);
+    frame.size.width = MAX(240.0, frame.size.width);
     frame.size.height = height;
     self.frame = frame;
     [self keepInsideSuperview];
@@ -734,8 +880,11 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     if (!superview) {
         return;
     }
-    
-    UIEdgeInsets insets = UIEdgeInsetsMake(48, 12, 24, 12);
+
+    UIEdgeInsets insets = UIEdgeInsetsMake(NJSponsorBlockPanelTopMargin,
+                                           NJSponsorBlockPanelMargin,
+                                           NJSponsorBlockPanelBottomMargin,
+                                           NJSponsorBlockPanelMargin);
     CGRect frame = self.frame;
     CGFloat maxX = CGRectGetWidth(superview.bounds) - insets.right - CGRectGetWidth(frame);
     CGFloat maxY = CGRectGetHeight(superview.bounds) - insets.bottom - CGRectGetHeight(frame);
@@ -756,6 +905,21 @@ static void *NJSponsorBlockNativeTimelineKey = &NJSponsorBlockNativeTimelineKey;
     }
     if ([category isEqualToString:@"interaction"]) {
         return @"互动提醒";
+    }
+    if ([category isEqualToString:@"selfpromo"]) {
+        return @"自我推广";
+    }
+    if ([category isEqualToString:@"preview"]) {
+        return @"前情/预览";
+    }
+    if ([category isEqualToString:@"poi_highlight"]) {
+        return @"精彩片段";
+    }
+    if ([category isEqualToString:@"filler"]) {
+        return @"填充片段";
+    }
+    if ([category isEqualToString:@"music_offtopic"]) {
+        return @"音乐/跑题";
     }
     return category.length > 0 ? category : @"片段";
 }
