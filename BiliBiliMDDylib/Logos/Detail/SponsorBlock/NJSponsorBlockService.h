@@ -15,6 +15,8 @@ typedef void(^NJSponsorBlockSubmitCompletion)(BOOL success, NSError *_Nullable e
 
 @interface NJSponsorBlockService : NSObject
 
++ (nullable NSString *)hashPrefixForVideoID:(NSString *)videoID;
+
 - (void)fetchSegmentsWithVideoID:(NSString *)videoID
                              cid:(NSInteger)cid
                       categories:(NSArray<NSString *> *)categories

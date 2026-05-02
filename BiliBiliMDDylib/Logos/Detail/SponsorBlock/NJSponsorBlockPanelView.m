@@ -15,11 +15,16 @@
 
 static CGFloat const NJSponsorBlockPanelWidth = 310.0;
 static CGFloat const NJSponsorBlockPanelMinHeight = 154.0;
-static CGFloat const NJSponsorBlockPanelCollapsedHeight = 126.0;
+static CGFloat const NJSponsorBlockPanelCollapsedHeight = 134.0;
 static CGFloat const NJSponsorBlockPanelMargin = 12.0;
 static CGFloat const NJSponsorBlockPanelTopMargin = 48.0;
 static CGFloat const NJSponsorBlockPanelBottomMargin = 24.0;
 static NSTimeInterval const NJSponsorBlockOverlayIdleTimeout = 4.0;
+static CGFloat const NJSponsorBlockSegmentRowHeight = 64.0;
+static CGFloat const NJSponsorBlockSegmentRowSpacing = 6.0;
+static CGFloat const NJSponsorBlockSegmentEmptyHeight = 30.0;
+static CGFloat const NJSponsorBlockSegmentListMaxHeight = 250.0;
+static CGFloat const NJSponsorBlockPanelChromeHeight = 134.0;
 
 typedef NS_ENUM(NSInteger, NJSponsorBlockPanelNoticeMode) {
     NJSponsorBlockPanelNoticeModeNone = 0,
@@ -52,6 +57,7 @@ typedef NS_ENUM(NSInteger, NJSponsorBlockPanelNoticeMode) {
 @property (nonatomic, strong) UILabel *iconLabel;
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UILabel *subtitleLabel;
+@property (nonatomic, strong) UIScrollView *segmentScrollView;
 @property (nonatomic, strong) UIStackView *segmentStackView;
 @property (nonatomic, strong) UIView *progressView;
 @property (nonatomic, strong) UIView *noticeView;
@@ -71,6 +77,7 @@ typedef NS_ENUM(NSInteger, NJSponsorBlockPanelNoticeMode) {
 @property (nonatomic, copy) NSString *submissionVideoID;
 @property (nonatomic, strong) NJSponsorBlockService *service;
 @property (nonatomic, strong) NSLayoutConstraint *noticeHeightConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *segmentScrollHeightConstraint;
 @property (nonatomic, assign) NJSponsorBlockPanelNoticeMode noticeMode;
 @property (nonatomic, assign) NSTimeInterval submissionStartTime;
 @property (nonatomic, assign) NSTimeInterval submissionVideoDuration;
@@ -106,6 +113,7 @@ typedef NS_ENUM(NSInteger, NJSponsorBlockPanelNoticeMode) {
 - (NSString *)submissionActionTypeForCategory:(NSString *)category;
 - (UIViewController *)presentationViewController;
 - (NSTimeInterval)durationForSegment:(NJSponsorBlockSegment *)segment;
+- (CGFloat)segmentRowsContentHeight;
 - (NSString *)detailTextForSegment:(NJSponsorBlockSegment *)segment currentTime:(NSTimeInterval)currentTime;
 - (NSString *)compactStringFromTime:(NSTimeInterval)time;
 
@@ -731,11 +739,17 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
     noticeStack.translatesAutoresizingMaskIntoConstraints = NO;
     [self.noticeView addSubview:noticeStack];
 
+    self.segmentScrollView = [[UIScrollView alloc] init];
+    self.segmentScrollView.showsVerticalScrollIndicator = YES;
+    self.segmentScrollView.alwaysBounceVertical = NO;
+    self.segmentScrollView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:self.segmentScrollView];
+
     self.segmentStackView = [[UIStackView alloc] init];
     self.segmentStackView.axis = UILayoutConstraintAxisVertical;
-    self.segmentStackView.spacing = 6;
+    self.segmentStackView.spacing = NJSponsorBlockSegmentRowSpacing;
     self.segmentStackView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:self.segmentStackView];
+    [self.segmentScrollView addSubview:self.segmentStackView];
 
     self.progressView = [[UIView alloc] init];
     self.progressView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.10];
@@ -779,6 +793,7 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
     [self addGestureRecognizer:pan];
 
     self.noticeHeightConstraint = [self.noticeView.heightAnchor constraintEqualToConstant:0];
+    self.segmentScrollHeightConstraint = [self.segmentScrollView.heightAnchor constraintEqualToConstant:NJSponsorBlockSegmentEmptyHeight];
 
     [NSLayoutConstraint activateConstraints:@[
         [self.iconLabel.widthAnchor constraintEqualToConstant:34],
@@ -803,11 +818,17 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
         [noticeStack.trailingAnchor constraintEqualToAnchor:self.noticeView.trailingAnchor constant:-6],
         [noticeStack.centerYAnchor constraintEqualToAnchor:self.noticeView.centerYAnchor],
 
-        [self.segmentStackView.topAnchor constraintEqualToAnchor:self.noticeView.bottomAnchor constant:10],
-        [self.segmentStackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
-        [self.segmentStackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-12],
+        [self.segmentScrollView.topAnchor constraintEqualToAnchor:self.noticeView.bottomAnchor constant:10],
+        [self.segmentScrollView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
+        [self.segmentScrollView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-12],
+        self.segmentScrollHeightConstraint,
+        [self.segmentStackView.topAnchor constraintEqualToAnchor:self.segmentScrollView.topAnchor],
+        [self.segmentStackView.leadingAnchor constraintEqualToAnchor:self.segmentScrollView.leadingAnchor],
+        [self.segmentStackView.trailingAnchor constraintEqualToAnchor:self.segmentScrollView.trailingAnchor],
+        [self.segmentStackView.bottomAnchor constraintEqualToAnchor:self.segmentScrollView.bottomAnchor],
+        [self.segmentStackView.widthAnchor constraintEqualToAnchor:self.segmentScrollView.widthAnchor],
 
-        [self.progressView.topAnchor constraintEqualToAnchor:self.segmentStackView.bottomAnchor constant:10],
+        [self.progressView.topAnchor constraintEqualToAnchor:self.segmentScrollView.bottomAnchor constant:10],
         [self.progressView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
         [self.progressView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-12],
         [self.progressView.heightAnchor constraintEqualToConstant:6],
@@ -880,8 +901,10 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
     self.timeLabel.text = [NSString stringWithFormat:@"当前 %@", [self stringFromTime:manager.currentPlaybackTime]];
     NSTimeInterval skippedDuration = [manager skippedDurationBeforePlaybackTime:manager.currentPlaybackTime];
     NSTimeInterval cleanTime = [manager playbackTimeWithoutSkippedSegments:manager.currentPlaybackTime];
-    self.statsLabel.text = [NSString stringWithFormat:@"%lu 段 · 省 %@\n净 %@",
-                            (unsigned long)segments.count,
+    NSUInteger totalCount = [manager allSegments].count;
+    NSString *segmentCountText = totalCount > segments.count ? [NSString stringWithFormat:@"%lu/%lu 段", (unsigned long)segments.count, (unsigned long)totalCount] : [NSString stringWithFormat:@"%lu 段", (unsigned long)segments.count];
+    self.statsLabel.text = [NSString stringWithFormat:@"%@ · 省 %@\n净 %@",
+                            segmentCountText,
                             [self compactStringFromTime:skippedDuration],
                             [self compactStringFromTime:cleanTime]];
 }
@@ -962,15 +985,20 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
         return;
     }
 
-    NSUInteger count = MIN(segments.count, 3);
-    for (NSUInteger i = 0; i < count; i++) {
-        [self.segmentStackView addArrangedSubview:[self rowForSegment:segments[i] currentTime:manager.currentPlaybackTime]];
-    }
-    if (segments.count > count) {
-        [self.segmentStackView addArrangedSubview:[self moreRowWithCount:segments.count - count]];
+    UIView *activeRow = nil;
+    for (NJSponsorBlockSegment *segment in segments) {
+        UIView *row = [self rowForSegment:segment currentTime:manager.currentPlaybackTime];
+        [self.segmentStackView addArrangedSubview:row];
+        if (!activeRow && [segment containsPlaybackTime:manager.currentPlaybackTime]) {
+            activeRow = row;
+        }
     }
     if (segments.count == 0) {
         [self.segmentStackView addArrangedSubview:[self emptyRow]];
+    } else if (activeRow) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.segmentScrollView scrollRectToVisible:activeRow.frame animated:NO];
+        });
     }
 }
 
@@ -1022,6 +1050,8 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
 - (void)applyCollapsedState {
     BOOL hideContent = self.collapsed;
 
+    self.segmentScrollView.hidden = hideContent;
+    self.segmentScrollView.userInteractionEnabled = !hideContent;
     self.segmentStackView.hidden = hideContent;
     self.segmentStackView.userInteractionEnabled = !hideContent;
 
@@ -1072,7 +1102,14 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
 - (UIView *)rowForSegment:(NJSponsorBlockSegment *)segment currentTime:(NSTimeInterval)currentTime {
     UIView *row = [[UIView alloc] init];
     BOOL active = [segment containsPlaybackTime:currentTime];
-    row.backgroundColor = active ? [UIColor colorWithRed:0.00 green:0.55 blue:0.58 alpha:0.92] : [UIColor colorWithWhite:1 alpha:0.08];
+    BOOL skipped = [[NJSponsorBlockManager sharedInstance] hasActuallySkippedSegment:segment];
+    if (active) {
+        row.backgroundColor = [UIColor colorWithRed:0.00 green:0.55 blue:0.58 alpha:0.92];
+    } else if (skipped) {
+        row.backgroundColor = [UIColor colorWithRed:0.18 green:0.45 blue:0.20 alpha:0.82];
+    } else {
+        row.backgroundColor = [UIColor colorWithWhite:1 alpha:0.08];
+    }
     row.layer.cornerRadius = 8;
 
     UILabel *dot = [[UILabel alloc] init];
@@ -1087,8 +1124,9 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
     categoryLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightBold];
     categoryLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 
+    NSString *stateText = active ? @"播放中" : (skipped ? @"已跳过" : @"已加载");
     UILabel *detailLabel = [[UILabel alloc] init];
-    detailLabel.text = [self detailTextForSegment:segment currentTime:currentTime];
+    detailLabel.text = [NSString stringWithFormat:@"%@ · %@", stateText, [self detailTextForSegment:segment currentTime:currentTime]];
     detailLabel.textColor = [UIColor colorWithWhite:0.80 alpha:1];
     detailLabel.font = [UIFont monospacedDigitSystemFontOfSize:11 weight:UIFontWeightSemibold];
     detailLabel.textAlignment = NSTextAlignmentRight;
@@ -1121,7 +1159,7 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
     [row addSubview:stack];
 
     [NSLayoutConstraint activateConstraints:@[
-        [row.heightAnchor constraintEqualToConstant:64],
+        [row.heightAnchor constraintEqualToConstant:NJSponsorBlockSegmentRowHeight],
         [dot.widthAnchor constraintEqualToConstant:16],
         [stack.leadingAnchor constraintEqualToAnchor:row.leadingAnchor constant:10],
         [stack.trailingAnchor constraintEqualToAnchor:row.trailingAnchor constant:-10],
@@ -1136,17 +1174,7 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
     label.textColor = [UIColor colorWithWhite:0.72 alpha:1];
     label.font = [UIFont systemFontOfSize:13 weight:UIFontWeightMedium];
     label.textAlignment = NSTextAlignmentCenter;
-    [label.heightAnchor constraintEqualToConstant:30].active = YES;
-    return label;
-}
-
-- (UIView *)moreRowWithCount:(NSUInteger)count {
-    UILabel *label = [[UILabel alloc] init];
-    label.text = [NSString stringWithFormat:@"还有 %lu 个片段未显示", (unsigned long)count];
-    label.textColor = [UIColor colorWithWhite:0.70 alpha:1.0];
-    label.font = [UIFont systemFontOfSize:12 weight:UIFontWeightMedium];
-    label.textAlignment = NSTextAlignmentCenter;
-    [label.heightAnchor constraintEqualToConstant:24].active = YES;
+    [label.heightAnchor constraintEqualToConstant:NJSponsorBlockSegmentEmptyHeight].active = YES;
     return label;
 }
 
@@ -1585,10 +1613,12 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
         return;
     }
 
-    CGFloat height = self.collapsed ? NJSponsorBlockPanelCollapsedHeight : NJSponsorBlockPanelMinHeight + (self.noticeView.hidden ? 0 : 62.0);
-    if (!self.collapsed) {
-        height += self.segmentStackView.arrangedSubviews.count * 70.0;
-    }
+    CGFloat contentHeight = [self segmentRowsContentHeight];
+    CGFloat listHeight = self.collapsed ? 0 : MIN(contentHeight, NJSponsorBlockSegmentListMaxHeight);
+    self.segmentScrollHeightConstraint.constant = listHeight;
+    self.segmentScrollView.scrollEnabled = contentHeight > listHeight + 1.0;
+
+    CGFloat height = self.collapsed ? NJSponsorBlockPanelCollapsedHeight : NJSponsorBlockPanelChromeHeight + listHeight + (self.noticeView.hidden ? 0 : 52.0);
 
     CGRect frame = self.frame;
     CGFloat availableWidth = CGRectGetWidth(superview.bounds) - NJSponsorBlockPanelMargin * 2.0;
@@ -1622,6 +1652,17 @@ static void *NJSponsorBlockPanelSegmentKey = &NJSponsorBlockPanelSegmentKey;
         return 0;
     }
     return segment.endTime - segment.startTime;
+}
+
+- (CGFloat)segmentRowsContentHeight {
+    NSUInteger count = self.segmentStackView.arrangedSubviews.count;
+    if (count == 0) {
+        return 0;
+    }
+    if (count == 1 && [self.segmentStackView.arrangedSubviews.firstObject isKindOfClass:[UILabel class]]) {
+        return NJSponsorBlockSegmentEmptyHeight;
+    }
+    return count * NJSponsorBlockSegmentRowHeight + (count - 1) * NJSponsorBlockSegmentRowSpacing;
 }
 
 - (NSString *)detailTextForSegment:(NJSponsorBlockSegment *)segment currentTime:(NSTimeInterval)currentTime {

@@ -6,6 +6,7 @@
 #import "NJSponsorBlockService.h"
 #import "NJSponsorBlockSegment.h"
 #import "NJSponsorBlockSettings.h"
+#import <CommonCrypto/CommonDigest.h>
 #import <math.h>
 
 static NSString * const NJSponsorBlockUserIDKey = @"NJSponsorBlockVoteUserIDKey";
@@ -14,7 +15,9 @@ static NSString * const NJSponsorBlockServiceErrorDomain = @"NJSponsorBlockServi
 @interface NJSponsorBlockService ()
 
 - (NSMutableURLRequest *)sponsorBlockRequestWithURL:(NSURL *)url method:(NSString *)method timeout:(NSTimeInterval)timeout;
-- (NSURL *)requestURLWithVideoID:(NSString *)videoID cid:(NSInteger)cid categories:(NSArray<NSString *> *)categories;
+- (NSURL *)requestURLWithHashPrefix:(NSString *)hashPrefix;
+- (NSArray<NSDictionary *> *)segmentDictionariesFromHashResponse:(id)json;
+- (NSSet<NSString *> *)supportedCategorySet;
 - (NSURL *)viewedSegmentURLWithUUID:(NSString *)uuid;
 - (NSURL *)voteURLWithUUID:(NSString *)uuid type:(NSInteger)type;
 - (NSURL *)submitURL;
@@ -25,6 +28,26 @@ static NSString * const NJSponsorBlockServiceErrorDomain = @"NJSponsorBlockServi
 @end
 
 @implementation NJSponsorBlockService
+
++ (NSString *)hashPrefixForVideoID:(NSString *)videoID {
+    if (videoID.length == 0) {
+        return nil;
+    }
+
+    NSData *data = [videoID dataUsingEncoding:NSUTF8StringEncoding];
+    if (data.length == 0) {
+        return nil;
+    }
+
+    unsigned char hash[CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256(data.bytes, (CC_LONG)data.length, hash);
+
+    NSMutableString *hexString = [NSMutableString stringWithCapacity:CC_SHA256_DIGEST_LENGTH * 2];
+    for (NSUInteger i = 0; i < CC_SHA256_DIGEST_LENGTH; i++) {
+        [hexString appendFormat:@"%02x", hash[i]];
+    }
+    return hexString.length >= 4 ? [hexString substringToIndex:4] : nil;
+}
 
 - (void)fetchSegmentsWithVideoID:(NSString *)videoID
                              cid:(NSInteger)cid
@@ -37,7 +60,8 @@ static NSString * const NJSponsorBlockServiceErrorDomain = @"NJSponsorBlockServi
         return;
     }
     
-    NSURL *url = [self requestURLWithVideoID:videoID cid:cid categories:categories];
+    (void)categories;
+    NSURL *url = [self requestURLWithHashPrefix:[[self class] hashPrefixForVideoID:videoID]];
     if (!url) {
         if (completion) {
             NSError *error = [NSError errorWithDomain:@"NJSponsorBlockService"
@@ -74,11 +98,15 @@ static NSString * const NJSponsorBlockServiceErrorDomain = @"NJSponsorBlockServi
             return;
         }
         
-        NSArray *items = [json isKindOfClass:[NSArray class]] ? json : @[];
+        NSArray<NSDictionary *> *items = [self segmentDictionariesFromHashResponse:json];
+        NSSet<NSString *> *supportedCategories = [self supportedCategorySet];
         NSMutableArray<NJSponsorBlockSegment *> *segments = [NSMutableArray array];
         for (NSDictionary *item in items) {
             NJSponsorBlockSegment *segment = [NJSponsorBlockSegment segmentWithDictionary:item];
-            if (!segment) {
+            if (!segment || ![segment.videoID isEqualToString:videoID] || segment.cid != cid) {
+                continue;
+            }
+            if (segment.category.length == 0 || ![supportedCategories containsObject:segment.category]) {
                 continue;
             }
             if (segment.actionType.length > 0 &&
@@ -265,21 +293,60 @@ static NSString * const NJSponsorBlockServiceErrorDomain = @"NJSponsorBlockServi
     return request;
 }
 
-- (NSURL *)requestURLWithVideoID:(NSString *)videoID cid:(NSInteger)cid categories:(NSArray<NSString *> *)categories {
-    NSArray<NSString *> *effectiveCategories = categories.count > 0 ? categories : @[@"sponsor"];
-    NSData *categoryData = [NSJSONSerialization dataWithJSONObject:effectiveCategories options:0 error:nil];
-    NSString *categoryString = [[NSString alloc] initWithData:categoryData encoding:NSUTF8StringEncoding] ?: @"[\"sponsor\"]";
-    
+- (NSURL *)requestURLWithHashPrefix:(NSString *)hashPrefix {
+    if (hashPrefix.length == 0) {
+        return nil;
+    }
+
     NSString *baseURLString = [NJSponsorBlockSettings serverBaseURLString];
     NSString *separator = [baseURLString hasSuffix:@"/"] ? @"" : @"/";
-    NSString *urlString = [NSString stringWithFormat:@"%@%@api/skipSegments", baseURLString, separator];
-    NSURLComponents *components = [NSURLComponents componentsWithString:urlString];
-    components.queryItems = @[
-        [NSURLQueryItem queryItemWithName:@"videoID" value:videoID],
-        [NSURLQueryItem queryItemWithName:@"cid" value:[NSString stringWithFormat:@"%ld", (long)cid]],
-        [NSURLQueryItem queryItemWithName:@"categories" value:categoryString],
-    ];
-    return components.URL;
+    NSString *urlString = [NSString stringWithFormat:@"%@%@api/skipSegments/%@", baseURLString, separator, hashPrefix];
+    return [NSURL URLWithString:urlString];
+}
+
+- (NSArray<NSDictionary *> *)segmentDictionariesFromHashResponse:(id)json {
+    if (![json isKindOfClass:[NSArray class]]) {
+        return @[];
+    }
+
+    NSMutableArray<NSDictionary *> *items = [NSMutableArray array];
+    for (id item in (NSArray *)json) {
+        if (![item isKindOfClass:[NSDictionary class]]) {
+            continue;
+        }
+        NSDictionary *dictionary = (NSDictionary *)item;
+        NSArray *segments = dictionary[@"segments"];
+        NSString *videoID = [dictionary[@"videoID"] isKindOfClass:[NSString class]] ? dictionary[@"videoID"] : @"";
+        id cid = dictionary[@"cid"];
+        if (![segments isKindOfClass:[NSArray class]]) {
+            [items addObject:dictionary];
+            continue;
+        }
+        for (id segmentItem in segments) {
+            if (![segmentItem isKindOfClass:[NSDictionary class]]) {
+                continue;
+            }
+            NSMutableDictionary *segmentDictionary = [(NSDictionary *)segmentItem mutableCopy];
+            if (videoID.length > 0 && ![segmentDictionary[@"videoID"] isKindOfClass:[NSString class]]) {
+                segmentDictionary[@"videoID"] = videoID;
+            }
+            if (cid && !segmentDictionary[@"cid"]) {
+                segmentDictionary[@"cid"] = cid;
+            }
+            [items addObject:[segmentDictionary copy]];
+        }
+    }
+    return [items copy];
+}
+
+- (NSSet<NSString *> *)supportedCategorySet {
+    NSMutableSet<NSString *> *categories = [NSMutableSet set];
+    for (NJSponsorBlockCategoryOption *option in [NJSponsorBlockSettings categoryOptions]) {
+        if (option.category.length > 0) {
+            [categories addObject:option.category];
+        }
+    }
+    return [categories copy];
 }
 
 - (NSURL *)viewedSegmentURLWithUUID:(NSString *)uuid {

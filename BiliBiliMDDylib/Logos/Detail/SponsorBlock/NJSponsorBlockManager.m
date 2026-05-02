@@ -63,6 +63,7 @@ static NSTimeInterval const NJSponsorBlockCooldown = 1.0;
 @property (nonatomic, assign) NSTimeInterval lastProbeLogTime;
 @property (nonatomic, assign) NSTimeInterval currentPlaybackTime;
 @property (nonatomic, assign) NSTimeInterval nativeVideoDuration;
+@property (nonatomic, copy) NSString *loadedServerBaseURLString;
 
 - (void)updateNativeVideoDuration:(NSTimeInterval)duration;
 - (NSTimeInterval)videoDurationInObject:(id)object;
@@ -90,6 +91,7 @@ static NSTimeInterval const NJSponsorBlockCooldown = 1.0;
     if (self) {
         self.videoID = @"";
         self.segments = @[];
+        self.loadedServerBaseURLString = @"";
         self.skippedUUIDs = [NSMutableSet set];
         self.actualSkippedUUIDs = [NSMutableSet set];
         self.service = [[NJSponsorBlockService alloc] init];
@@ -114,6 +116,7 @@ static NSTimeInterval const NJSponsorBlockCooldown = 1.0;
     self.videoID = videoID;
     self.cid = cid;
     self.segments = @[];
+    self.loadedServerBaseURLString = @"";
     self.nativeVideoDuration = 0;
     self.lastSkippedSegment = nil;
     [self.skippedUUIDs removeAllObjects];
@@ -200,13 +203,21 @@ static NSTimeInterval const NJSponsorBlockCooldown = 1.0;
            [data rangeOfData:cidData options:0 range:range].location != NSNotFound;
 }
 
-- (NSArray<NJSponsorBlockSegment *> *)displaySegments {
+- (NSArray<NJSponsorBlockSegment *> *)allSegments {
     if (![NJSponsorBlockSettings enabled] || self.segments.count == 0) {
+        return @[];
+    }
+    return self.segments;
+}
+
+- (NSArray<NJSponsorBlockSegment *> *)displaySegments {
+    NSArray<NJSponsorBlockSegment *> *allSegments = [self allSegments];
+    if (allSegments.count == 0) {
         return @[];
     }
 
     NSMutableArray<NJSponsorBlockSegment *> *segments = [NSMutableArray array];
-    for (NJSponsorBlockSegment *segment in self.segments) {
+    for (NJSponsorBlockSegment *segment in allSegments) {
         if ([NJSponsorBlockSettings shouldShowSegment:segment]) {
             [segments addObject:segment];
         }
@@ -421,6 +432,13 @@ static NSTimeInterval const NJSponsorBlockCooldown = 1.0;
     return [self.skippedUUIDs containsObject:segment.uuid];
 }
 
+- (BOOL)hasActuallySkippedSegment:(NJSponsorBlockSegment *)segment {
+    if (segment.uuid.length == 0) {
+        return NO;
+    }
+    return [self.actualSkippedUUIDs containsObject:segment.uuid];
+}
+
 - (BOOL)isInCooldown {
     return [[NSDate date] compare:self.cooldownUntil] == NSOrderedAscending;
 }
@@ -453,17 +471,12 @@ static NSTimeInterval const NJSponsorBlockCooldown = 1.0;
     if (![NJSponsorBlockSettings enabled] || self.videoID.length == 0 || self.cid <= 0) {
         return;
     }
-    
-    NSArray<NSString *> *categories = [NJSponsorBlockSettings requestCategories];
-    if (categories.count == 0) {
-        self.segments = @[];
-        [self postStateChangedNotification];
-        return;
-    }
 
+    NSString *serverBaseURLString = [NJSponsorBlockSettings serverBaseURLString];
     NSArray<NJSponsorBlockSegment *> *cachedSegments = [self cachedSegmentsForVideoID:self.videoID cid:self.cid];
     if (cachedSegments) {
         self.segments = cachedSegments;
+        self.loadedServerBaseURLString = serverBaseURLString;
         [self postStateChangedNotification];
         return;
     }
@@ -471,18 +484,19 @@ static NSTimeInterval const NJSponsorBlockCooldown = 1.0;
     NSString *videoID = self.videoID;
     NSInteger cid = self.cid;
     __weak typeof(self) weakSelf = self;
-    [self.service fetchSegmentsWithVideoID:videoID cid:cid categories:categories completion:^(NSArray<NJSponsorBlockSegment *> *segments, NSError *error) {
+    [self.service fetchSegmentsWithVideoID:videoID cid:cid categories:@[] completion:^(NSArray<NJSponsorBlockSegment *> *segments, NSError *error) {
         if (error) {
             NSLog(@"[NJSponsorBlock] fetch segments failed: %@", error);
             return;
         }
-        
+
         dispatch_async(dispatch_get_main_queue(), ^{
             __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf || ![strongSelf.videoID isEqualToString:videoID] || strongSelf.cid != cid) {
+            if (!strongSelf || ![strongSelf.videoID isEqualToString:videoID] || strongSelf.cid != cid || ![serverBaseURLString isEqualToString:[NJSponsorBlockSettings serverBaseURLString]]) {
                 return;
             }
             strongSelf.segments = segments;
+            strongSelf.loadedServerBaseURLString = serverBaseURLString;
             [strongSelf saveSegments:segments videoID:videoID cid:cid];
             [strongSelf postStateChangedNotification];
             NSLog(@"[NJSponsorBlock] loaded %lu segments for %@:%ld", (unsigned long)segments.count, videoID, (long)cid);
@@ -515,9 +529,10 @@ static NSTimeInterval const NJSponsorBlockCooldown = 1.0;
 }
 
 - (NSString *)cacheKeyWithVideoID:(NSString *)videoID cid:(NSInteger)cid {
-    NSString *configuration = [[NJSponsorBlockSettings requestConfigurationIdentifier] stringByReplacingOccurrencesOfString:@"|" withString:@"_"];
-    configuration = [configuration stringByReplacingOccurrencesOfString:@":" withString:@"-"];
-    return [NSString stringWithFormat:@"%@_%@_%ld_%@", NJSponsorBlockCachePrefix, videoID, (long)cid, configuration];
+    NSString *server = [[NJSponsorBlockSettings serverBaseURLString] stringByReplacingOccurrencesOfString:@"|" withString:@"_"];
+    server = [server stringByReplacingOccurrencesOfString:@":" withString:@"-"];
+    server = [server stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
+    return [NSString stringWithFormat:@"%@_%@_%ld_%@", NJSponsorBlockCachePrefix, videoID, (long)cid, server];
 }
 
 - (void)invalidateCachedSegmentsForVideoID:(NSString *)videoID cid:(NSInteger)cid {
@@ -531,12 +546,19 @@ static NSTimeInterval const NJSponsorBlockCooldown = 1.0;
 }
 
 - (void)handleSettingsDidChange {
-    self.segments = @[];
-    self.lastSkippedSegment = nil;
-    [self.skippedUUIDs removeAllObjects];
-    [self.actualSkippedUUIDs removeAllObjects];
+    NSString *serverBaseURLString = [NJSponsorBlockSettings serverBaseURLString];
+    BOOL shouldReload = self.loadedServerBaseURLString.length == 0 || ![self.loadedServerBaseURLString isEqualToString:serverBaseURLString];
+    if (shouldReload) {
+        self.segments = @[];
+        self.loadedServerBaseURLString = @"";
+        self.lastSkippedSegment = nil;
+        [self.skippedUUIDs removeAllObjects];
+        [self.actualSkippedUUIDs removeAllObjects];
+    }
     [self postStateChangedNotification];
-    [self loadSegmentsForCurrentVideoIfNeeded];
+    if (shouldReload) {
+        [self loadSegmentsForCurrentVideoIfNeeded];
+    }
 }
 
 - (void)postStateChangedNotification {

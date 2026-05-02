@@ -27,6 +27,7 @@ FOUNDATION_EXPORT NSNotificationName const NJSponsorBlockSeekRequestNotification
 - (void)updateVideoID:(NSString *)videoID cid:(NSInteger)cid;
 - (void)inspectResponseData:(NSData *)data response:(NSURLResponse *)response;
 - (void)inspectModelObject:(id)object source:(NSString *)source;
+- (NSArray<NJSponsorBlockSegment *> *)allSegments;
 - (NSArray<NJSponsorBlockSegment *> *)displaySegments;
 - (nullable NJSponsorBlockSegment *)activeSegmentAtPlaybackTime:(NSTimeInterval)time;
 - (nullable NJSponsorBlockSegment *)autoSkipSegmentAtPlaybackTime:(NSTimeInterval)time;
@@ -47,6 +48,7 @@ FOUNDATION_EXPORT NSNotificationName const NJSponsorBlockSeekRequestNotification
                           segment:(NSArray<NSNumber *> *)segment
                        completion:(nullable NJSponsorBlockSubmitCompletion)completion;
 - (BOOL)hasSkippedSegment:(NJSponsorBlockSegment *)segment;
+- (BOOL)hasActuallySkippedSegment:(NJSponsorBlockSegment *)segment;
 - (BOOL)isInCooldown;
 - (void)enterCooldown;
 
